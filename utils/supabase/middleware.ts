@@ -41,6 +41,17 @@ export async function updateSession(request: NextRequest) {
     })
     
     return redirectResponse
+  } else if (user && request.nextUrl.pathname === '/') {
+    const url = request.nextUrl.clone()
+    url.pathname = '/home'
+    const redirectResponse = NextResponse.redirect(url)
+    
+    // Copy cookies to the new response
+    supabaseResponse.cookies.getAll().forEach((cookie) => {
+      redirectResponse.cookies.set(cookie.name, cookie.value, cookie)
+    })
+    
+    return redirectResponse
   }
 
   return supabaseResponse
