@@ -61,10 +61,7 @@ export function Sidebar() {
     fetchProfileData()
   }, [supabase])
 
-  const links = [
-    { href: '/home', icon: Home, label: 'Home' },
-    // You can add more links here in the future
-  ]
+  const links: any[] = [] // Empty for now, as Home is moved to the icon
 
   return (
     <aside
@@ -73,59 +70,50 @@ export function Sidebar() {
       } h-screen`}
     >
       {/* Top Header */}
-      <div className="flex items-center justify-between p-4 border-b border-white/10 h-16">
-        {/* Placeholder Icon on Top Left */}
-        <div className={`flex items-center justify-center text-purple-400 ${isCollapsed ? 'w-full' : ''}`}>
+      <div className={`flex ${isCollapsed ? 'flex-col items-center justify-center py-4 space-y-4' : 'items-center justify-between p-4 h-16'} border-b border-white/10 transition-all`}>
+        {/* Icon on Top Left (Now a link to Home) */}
+        <Link href="/home" className={`flex items-center text-purple-400 hover:text-purple-300 transition-colors ${isCollapsed ? 'justify-center w-full' : ''}`}>
           <LayoutDashboard className="w-8 h-8" />
           {!isCollapsed && <span className="ml-3 font-bold text-lg text-white">My App</span>}
-        </div>
+        </Link>
 
-        {/* Back Button / Toggle on Top Right */}
-        {!isCollapsed && (
-          <button
-            onClick={() => setIsCollapsed(true)}
-            className="p-1 hover:bg-white/10 rounded-lg text-white/50 hover:text-white transition-colors"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-        )}
-      </div>
-
-      {/* Expand button when collapsed (Optional, for UX) */}
-      {isCollapsed && (
+        {/* Toggle Button */}
         <button
-          onClick={() => setIsCollapsed(false)}
-          className="absolute -right-3 top-20 bg-purple-600 rounded-full p-1 border border-white/20 text-white shadow-lg hover:bg-purple-500 transition-colors z-10"
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className={`p-1.5 hover:bg-white/10 rounded-lg text-white/50 hover:text-white transition-colors ${isCollapsed ? 'bg-white/5' : ''}`}
+          title={isCollapsed ? "Expand Menu" : "Collapse Menu"}
         >
-          <ChevronRight className="w-4 h-4" />
+          {isCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
         </button>
-      )}
+      </div>
 
       {/* Navigation Links */}
       <nav className="flex-1 overflow-y-auto py-4">
-        <ul className="space-y-2 px-3">
-          {links.map((link) => {
-            const isActive = pathname === link.href
-            return (
-              <li key={link.href}>
-                <Link
-                  href={link.href}
-                  className={`flex items-center px-3 py-2.5 rounded-xl transition-all duration-200 group ${
-                    isActive
-                      ? 'bg-purple-500/20 text-purple-300'
-                      : 'text-white/60 hover:bg-white/10 hover:text-white'
-                  }`}
-                  title={isCollapsed ? link.label : undefined}
-                >
-                  <link.icon className={`w-5 h-5 flex-shrink-0 ${isCollapsed ? 'mx-auto' : ''}`} />
-                  {!isCollapsed && (
-                    <span className="ml-3 font-medium">{link.label}</span>
-                  )}
-                </Link>
-              </li>
-            )
-          })}
-        </ul>
+        {links.length > 0 && (
+          <ul className="space-y-2 px-3">
+            {links.map((link) => {
+              const isActive = pathname === link.href
+              return (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className={`flex items-center px-3 py-2.5 rounded-xl transition-all duration-200 group ${
+                      isActive
+                        ? 'bg-purple-500/20 text-purple-300'
+                        : 'text-white/60 hover:bg-white/10 hover:text-white'
+                    }`}
+                    title={isCollapsed ? link.label : undefined}
+                  >
+                    <link.icon className={`w-5 h-5 flex-shrink-0 ${isCollapsed ? 'mx-auto' : ''}`} />
+                    {!isCollapsed && (
+                      <span className="ml-3 font-medium">{link.label}</span>
+                    )}
+                  </Link>
+                </li>
+              )
+            })}
+          </ul>
+        )}
       </nav>
 
       {/* Account Section at the Bottom */}
