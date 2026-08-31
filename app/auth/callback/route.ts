@@ -23,13 +23,23 @@ export async function GET(request: Request) {
       const user = data.user
       let redirectPath = next
 
-      // Check if it's a new user by comparing created_at and last_sign_in_at
-      const createdAt = new Date(user.created_at).getTime()
-      const lastSignInAt = new Date(user.last_sign_in_at || user.created_at).getTime()
-      const isNewUser = Math.abs(createdAt - lastSignInAt) < 5000 // within 5 seconds
+      const { data: profile } = await supabase
+        .from('profile')
+        .select('id')
+        .eq('id', user.id)
+        .maybeSingle()
 
-      // If they clicked "Sign up with Google" but already have an account, route to home
-      if (!isNewUser && redirectPath === '/profile') {
+      const hasProfile = !!profile
+
+      // If they clicked "Sign in with Google" but have no profile, they haven't signed up
+      if (redirectPath === '/home' && !hasProfile) {
+        // Sign them out so they aren't logged in
+        await supabase.auth.signOut()
+        return NextResponse.redirect(`${origin}/signin?error=${encodeURIComponent('Account does not exist. Please sign up first.')}`)
+      }
+
+      // If they clicked "Sign up with Google" but already have a profile, route to home
+      if (redirectPath === '/profile' && hasProfile) {
         redirectPath = '/home'
       }
 
