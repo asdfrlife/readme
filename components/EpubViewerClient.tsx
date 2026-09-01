@@ -23,7 +23,7 @@ export default function EpubViewerClient({ url }: { url: string }) {
           width: '100%',
           height: '100%',
           manager: 'continuous',
-          flow: 'scrolled',
+          flow: 'scrolled-doc',
         })
 
         // Optional: Set a dark theme to match the app
@@ -54,8 +54,8 @@ export default function EpubViewerClient({ url }: { url: string }) {
   }, [url])
 
   return (
-    <div className="flex-1 w-full h-full bg-[#121212] overflow-hidden relative border border-white/10 rounded-2xl">
-      <div ref={viewerRef} className="w-full h-full" />
+    <div className="flex-1 w-full h-full bg-[#121212] relative border border-white/10 rounded-2xl">
+      <div ref={viewerRef} className="w-full h-full overflow-y-auto" />
     </div>
   )
 }
