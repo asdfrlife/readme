@@ -78,7 +78,7 @@ export default async function ViewPage(props: {
       </div>
 
       <ResizableViewerWrapper fileName={fileName}>
-        <EpubViewer url={signedUrlData.signedUrl} />
+        <EpubViewer url={signedUrlData.signedUrl} fileName={fileName} />
       </ResizableViewerWrapper>
     </div>
   )

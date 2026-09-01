@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import ePub from 'epubjs'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
-export default function EpubViewerClient({ url }: { url: string }) {
+export default function EpubViewerClient({ url, fileName }: { url: string, fileName: string }) {
   const viewerRef = useRef<HTMLDivElement>(null)
   const [rendition, setRendition] = useState<any>(null)
   const [atStart, setAtStart] = useState(true)
@@ -53,9 +53,17 @@ export default function EpubViewerClient({ url }: { url: string }) {
         r.on('relocated', (location: any) => {
           setAtStart(location.atStart)
           setAtEnd(location.atEnd)
+          if (location.start && location.start.cfi) {
+            localStorage.setItem(`epub_progress_${fileName}`, location.start.cfi)
+          }
         })
 
-        await r.display()
+        const savedCfi = localStorage.getItem(`epub_progress_${fileName}`)
+        if (savedCfi) {
+          await r.display(savedCfi)
+        } else {
+          await r.display()
+        }
         setRendition(r)
       } catch (err) {
         console.error('Error rendering EPUB:', err)
