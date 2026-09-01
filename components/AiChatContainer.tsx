@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { Send, Bot } from 'lucide-react'
 
+import ReactMarkdown from 'react-markdown'
+
 export function AiChatContainer() {
   const [models, setModels] = useState<any[]>([])
   const [selectedModel, setSelectedModel] = useState<string>('')
@@ -105,20 +107,24 @@ export function AiChatContainer() {
         ) : (
           <div className="flex flex-col gap-2">
             {messages.map((msg, idx) => (
-              <div key={idx} className={`flex w-full ${msg.role === 'user' ? 'justify-start' : 'justify-end'} mb-2`}>
+              <div key={idx} className={`flex w-full ${msg.role === 'user' ? 'justify-end' : 'justify-start'} mb-2`}>
                 <div className={`max-w-[85%] px-4 py-3 shadow-sm ${
                   msg.role === 'user'
-                    ? 'bg-white/10 border border-white/10 text-white rounded-2xl rounded-tl-sm'
-                    : 'bg-purple-600 text-white rounded-2xl rounded-tr-sm'
+                    ? 'bg-purple-600 text-white rounded-2xl rounded-tr-sm'
+                    : 'bg-white/10 border border-white/10 text-white rounded-2xl rounded-tl-sm'
                 }`}>
-                  <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                  <ReactMarkdown 
+                    className={`text-sm leading-relaxed ${msg.role === 'model' ? 'prose prose-invert max-w-none prose-p:leading-relaxed prose-pre:bg-black/50 prose-pre:p-2 prose-pre:rounded-lg prose-code:text-purple-300' : 'whitespace-pre-wrap'}`}
+                  >
+                    {msg.content}
+                  </ReactMarkdown>
                 </div>
               </div>
             ))}
             
             {isGenerating && (
-              <div className="flex w-full justify-end mb-2">
-                <div className="max-w-[85%] bg-purple-600/50 border border-purple-500/30 text-white rounded-2xl rounded-tr-sm px-4 py-4 shadow-sm flex items-center gap-1.5">
+              <div className="flex w-full justify-start mb-2">
+                <div className="max-w-[85%] bg-white/10 border border-white/10 text-white rounded-2xl rounded-tl-sm px-4 py-4 shadow-sm flex items-center gap-1.5">
                   <div className="w-1.5 h-1.5 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                   <div className="w-1.5 h-1.5 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                   <div className="w-1.5 h-1.5 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
