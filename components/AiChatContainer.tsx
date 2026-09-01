@@ -31,6 +31,22 @@ export function AiChatContainer({ bookTitle }: { bookTitle?: string }) {
     }
     
     fetchHistory()
+
+    // Supabase Realtime: Live stream checking for new conversations
+    const channel = supabase
+      .channel('realtime-conversations')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'conversations' },
+        () => {
+          fetchHistory() // Refresh the list automatically if a convo is added/updated
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [])
 
   const fetchHistory = async () => {
@@ -126,7 +142,10 @@ export function AiChatContainer({ bookTitle }: { bookTitle?: string }) {
               <MessageSquarePlus className="w-4 h-4" />
             </button>
             <button 
-              onClick={() => setIsHistoryOpen(!isHistoryOpen)}
+              onClick={() => {
+                if (!isHistoryOpen) fetchHistory()
+                setIsHistoryOpen(!isHistoryOpen)
+              }}
               className={`p-1.5 rounded-lg transition-colors ${isHistoryOpen ? 'text-purple-400 bg-purple-500/20' : 'text-white/50 hover:text-white hover:bg-white/10'}`}
               title="Chat History"
             >

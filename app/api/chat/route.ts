@@ -60,11 +60,9 @@ export async function POST(req: Request) {
       parts: [{ text: m.content }]
     }))
 
-    const actualModel = model === 'gemini-3.1-flash-lite' ? 'gemini-1.5-flash' : model
-
     // Generate AI response
     const response = await ai.models.generateContent({
-      model: actualModel,
+      model: model,
       contents: contents,
     })
 
