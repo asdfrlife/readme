@@ -16,7 +16,10 @@ export default function EpubThumbnailClient({ url }: { url: string }) {
     const extractCover = async () => {
       try {
         setLoading(true)
-        const book = ePub(url)
+        const response = await fetch(url)
+        if (!response.ok) throw new Error('Failed to fetch EPUB')
+        const buffer = await response.arrayBuffer()
+        const book = ePub(buffer)
         
         await book.ready
         const cover = await book.coverUrl()

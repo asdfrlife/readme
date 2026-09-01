@@ -9,31 +9,47 @@ export default function EpubViewerClient({ url }: { url: string }) {
   useEffect(() => {
     if (!viewerRef.current) return
 
-    const book = ePub(url)
-    
-    const rendition = book.renderTo(viewerRef.current, {
-      width: '100%',
-      height: '100%',
-      manager: 'continuous',
-      flow: 'scrolled',
-    })
+    let book: any = null
 
-    // Optional: Set a dark theme to match the app
-    rendition.hooks.content.register((contents: any) => {
-      const css = `
-        body { 
-          color: #e5e7eb !important; 
-          background-color: #121212 !important; 
-        }
-        a { color: #c084fc !important; }
-      `
-      contents.addStylesheetRules(css)
-    })
+    const loadBook = async () => {
+      try {
+        const response = await fetch(url)
+        if (!response.ok) throw new Error('Failed to fetch EPUB')
+        const buffer = await response.arrayBuffer()
+        
+        book = ePub(buffer)
+        
+        const rendition = book.renderTo(viewerRef.current, {
+          width: '100%',
+          height: '100%',
+          manager: 'continuous',
+          flow: 'scrolled',
+        })
 
-    rendition.display()
+        // Optional: Set a dark theme to match the app
+        rendition.hooks.content.register((contents: any) => {
+          const css = `
+            body { 
+              color: #e5e7eb !important; 
+              background-color: #121212 !important; 
+            }
+            a { color: #c084fc !important; }
+          `
+          contents.addStylesheetRules(css)
+        })
+
+        rendition.display()
+      } catch (err) {
+        console.error('Error rendering EPUB:', err)
+      }
+    }
+
+    loadBook()
 
     return () => {
-      book.destroy()
+      if (book) {
+        book.destroy()
+      }
     }
   }, [url])
 
