@@ -113,11 +113,11 @@ export function AiChatContainer() {
                     ? 'bg-purple-600 text-white rounded-2xl rounded-tr-sm'
                     : 'bg-white/10 border border-white/10 text-white rounded-2xl rounded-tl-sm'
                 }`}>
-                  <ReactMarkdown 
-                    className={`text-sm leading-relaxed ${msg.role === 'model' ? 'prose prose-invert max-w-none prose-p:leading-relaxed prose-pre:bg-black/50 prose-pre:p-2 prose-pre:rounded-lg prose-code:text-purple-300' : 'whitespace-pre-wrap'}`}
-                  >
-                    {msg.content}
-                  </ReactMarkdown>
+                  <div className={`text-sm leading-relaxed ${msg.role === 'model' ? 'prose prose-invert max-w-none prose-p:leading-relaxed prose-pre:bg-black/50 prose-pre:p-2 prose-pre:rounded-lg prose-code:text-purple-300' : 'whitespace-pre-wrap'}`}>
+                    <ReactMarkdown>
+                      {msg.content}
+                    </ReactMarkdown>
+                  </div>
                 </div>
               </div>
             ))}
