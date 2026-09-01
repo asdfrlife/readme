@@ -38,6 +38,12 @@ export default function EpubViewerClient({ url }: { url: string }) {
               background-color: #ffffff !important; 
               padding-left: 180px !important;
               padding-right: 180px !important;
+              box-sizing: border-box !important;
+              margin: 0 auto !important;
+              max-width: 100% !important;
+            }
+            p, div {
+              text-align: justify !important;
             }
             a { color: #8b5cf6 !important; }
           `
