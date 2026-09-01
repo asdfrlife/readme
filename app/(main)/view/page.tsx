@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft } from 'lucide-react'
 import { EpubViewer } from '@/components/EpubViewer'
+import { ResizableViewerWrapper } from '@/components/ResizableViewerWrapper'
 
 export default async function ViewPage(props: {
   searchParams: Promise<{ file?: string }>
@@ -60,11 +61,9 @@ export default async function ViewPage(props: {
         <div className="w-24" /> {/* Spacer for centering title */}
       </div>
 
-      <div className="flex-1 w-full overflow-hidden flex justify-end">
-        <div className="h-full w-[920px] max-w-full">
-          <EpubViewer url={signedUrlData.signedUrl} />
-        </div>
-      </div>
+      <ResizableViewerWrapper>
+        <EpubViewer url={signedUrlData.signedUrl} />
+      </ResizableViewerWrapper>
     </div>
   )
 }

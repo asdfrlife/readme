@@ -76,8 +76,11 @@ export default function EpubViewerClient({ url }: { url: string }) {
   }
 
   return (
-    <div className="flex-1 w-full h-full bg-white relative border border-white/10 rounded-2xl overflow-hidden group">
-      <div ref={viewerRef} className="w-full h-full" style={{ overflowAnchor: 'none' }} />
+    <div className="flex-1 w-full h-full bg-white relative border border-white/10 rounded-2xl overflow-hidden group flex">
+      {/* Resizer Handle (Native CSS or Custom logic will control the wrapper) */}
+      <div className="flex-1 h-full px-[180px] py-8">
+        <div ref={viewerRef} className="w-full h-full" style={{ overflowAnchor: 'none' }} />
+      </div>
       
       {/* Navigation Overlays */}
       <div className="absolute bottom-6 right-6 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
