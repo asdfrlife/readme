@@ -25,7 +25,8 @@ export function ResizableViewerWrapper({ children }: { children: React.ReactNode
       
       const deltaX = startXRef.current - e.clientX
       // Moving mouse left increases width (deltaX is positive)
-      const newWidth = Math.max(400, startWidthRef.current + deltaX)
+      // Min width 660px guarantees 300px of text between the 180px paddings
+      const newWidth = Math.max(660, startWidthRef.current + deltaX)
       setWidth(newWidth)
     }
 
