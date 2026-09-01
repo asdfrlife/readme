@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react'
 
-export function ResizableViewerWrapper({ children }: { children: React.ReactNode }) {
+export function ResizableViewerWrapper({ children, fileName }: { children: React.ReactNode, fileName: string }) {
   // A4 paper proportion minimum (approx 700px for typical screens)
   const [width, setWidth] = useState(700)
   const [isResizing, setIsResizing] = useState(false)
@@ -10,6 +10,12 @@ export function ResizableViewerWrapper({ children }: { children: React.ReactNode
   const isResizingRef = useRef(false)
   const startXRef = useRef(0)
   const startWidthRef = useRef(700)
+
+  useEffect(() => {
+    if (fileName) {
+      localStorage.setItem('lastReadBook', fileName)
+    }
+  }, [fileName])
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault()

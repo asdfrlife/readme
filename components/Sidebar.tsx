@@ -11,7 +11,8 @@ import {
   User,
   LayoutDashboard,
   Settings,
-  Plus
+  Plus,
+  BookOpen
 } from 'lucide-react'
 
 export function Sidebar() {
@@ -115,7 +116,17 @@ export function Sidebar() {
     }
   }
 
-  const links: any[] = [] // Empty for now, as Home is moved to the icon
+  const [lastRead, setLastRead] = useState<string | null>(null)
+
+  useEffect(() => {
+    // Check localStorage whenever the pathname changes (e.g., after they navigate to /view)
+    const saved = localStorage.getItem('lastReadBook')
+    if (saved) setLastRead(saved)
+  }, [pathname])
+
+  const links = [
+    { href: lastRead ? `/view?file=${encodeURIComponent(lastRead)}` : '/view', path: '/view', label: 'Reading', icon: BookOpen }
+  ]
 
   return (
     <>
@@ -167,7 +178,7 @@ export function Sidebar() {
         {links.length > 0 && (
           <ul className="space-y-2 px-3">
             {links.map((link) => {
-              const isActive = pathname === link.href
+              const isActive = pathname === link.path
               return (
                 <li key={link.href}>
                   <Link

@@ -1,7 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, BookOpen } from 'lucide-react'
 import { EpubViewer } from '@/components/EpubViewer'
 import { ResizableViewerWrapper } from '@/components/ResizableViewerWrapper'
 
@@ -12,7 +12,23 @@ export default async function ViewPage(props: {
   const fileName = searchParams.file
 
   if (!fileName) {
-    redirect('/home')
+    return (
+      <div className="h-full w-full flex flex-col items-center justify-center p-8 bg-black">
+        <div className="w-full max-w-2xl border border-white/20 p-10 rounded-2xl bg-white/5 backdrop-blur-md flex flex-col items-center text-center">
+          <BookOpen className="w-12 h-12 text-white/40 mb-4" />
+          <h1 className="text-3xl font-bold text-white mb-4">No Book Selected</h1>
+          <p className="text-white/60 mb-8">
+            Please go to your dashboard and select a book to start reading.
+          </p>
+          <Link 
+            href="/home"
+            className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-colors"
+          >
+            Go to Dashboard
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   const supabase = await createClient()
@@ -61,7 +77,7 @@ export default async function ViewPage(props: {
         <div className="w-24" /> {/* Spacer for centering title */}
       </div>
 
-      <ResizableViewerWrapper>
+      <ResizableViewerWrapper fileName={fileName}>
         <EpubViewer url={signedUrlData.signedUrl} />
       </ResizableViewerWrapper>
     </div>
