@@ -78,6 +78,20 @@ export function AiChatContainer({ bookTitle }: { bookTitle?: string }) {
     setIsHistoryOpen(false)
   }
 
+  const deleteConversation = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation()
+    // Optimistic UI update without rebuilding the page
+    setHistory(prev => prev.filter(h => h.id !== id))
+    
+    // If the user deleted the chat they are currently viewing, reset the chat view
+    if (conversationId === id) {
+      startNewChat()
+    }
+
+    // Delete from database (messages cascade automatically)
+    await supabase.from('conversations').delete().eq('id', id)
+  }
+
   const handleSend = async () => {
     if (!message.trim() || models.length === 0 || isGenerating) return
 
@@ -184,13 +198,21 @@ export function AiChatContainer({ bookTitle }: { bookTitle?: string }) {
             <p className="text-white/40 text-sm p-4 text-center">No history found.</p>
           ) : (
             history.map(h => (
-              <button 
-                key={h.id}
-                onClick={() => loadConversation(h.id)}
-                className={`text-left p-3 rounded-lg transition-colors text-sm truncate ${h.id === conversationId ? 'bg-purple-500/20 text-purple-300' : 'hover:bg-white/5 text-white/80'}`}
-              >
-                {h.title}
-              </button>
+              <div key={h.id} className="relative group">
+                <button 
+                  onClick={() => loadConversation(h.id)}
+                  className={`w-full text-left p-3 pr-10 rounded-lg transition-colors text-sm truncate ${h.id === conversationId ? 'bg-purple-500/20 text-purple-300' : 'hover:bg-white/5 text-white/80'}`}
+                >
+                  {h.title}
+                </button>
+                <button
+                  onClick={(e) => deleteConversation(e, h.id)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-white/30 hover:text-red-400 hover:bg-red-500/10 rounded-md transition-colors opacity-0 group-hover:opacity-100"
+                  title="Delete Conversation"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             ))
           )}
         </div>
