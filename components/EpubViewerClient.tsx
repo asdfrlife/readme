@@ -2,13 +2,14 @@
 
 import { useEffect, useRef, useState } from 'react'
 import ePub from 'epubjs'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Bot } from 'lucide-react'
 
 export default function EpubViewerClient({ url, fileName }: { url: string, fileName: string }) {
   const viewerRef = useRef<HTMLDivElement>(null)
   const [rendition, setRendition] = useState<any>(null)
   const [atStart, setAtStart] = useState(true)
   const [atEnd, setAtEnd] = useState(false)
+  const [tooltip, setTooltip] = useState<{ x: number, y: number, text: string } | null>(null)
 
   useEffect(() => {
     if (!viewerRef.current) return
@@ -45,6 +46,9 @@ export default function EpubViewerClient({ url, fileName }: { url: string, fileN
             p, div {
               text-align: justify !important;
             }
+            ::selection {
+              background: rgba(139, 92, 246, 0.3) !important;
+            }
             a { color: #8b5cf6 !important; }
           `
           contents.addStylesheetRules(css)
@@ -53,9 +57,30 @@ export default function EpubViewerClient({ url, fileName }: { url: string, fileN
         r.on('relocated', (location: any) => {
           setAtStart(location.atStart)
           setAtEnd(location.atEnd)
+          setTooltip(null) // clear tooltip on scroll/change
           if (location.start && location.start.cfi) {
             localStorage.setItem(`epub_progress_${fileName}`, location.start.cfi)
           }
+        })
+
+        r.on('selected', (cfiRange: any, contents: any) => {
+          const selection = contents.window.getSelection()
+          const text = selection.toString()
+          if (!text.trim()) return
+
+          const range = selection.getRangeAt(0)
+          const rect = range.getBoundingClientRect()
+          
+          setTooltip({
+            x: rect.left + (rect.width / 2),
+            y: rect.top, // position right above the top of the selection
+            text: text.trim()
+          })
+        })
+
+        // Clear tooltip when clicking elsewhere
+        r.on('click', () => {
+          setTooltip(null)
         })
 
         const savedCfi = localStorage.getItem(`epub_progress_${fileName}`)
@@ -93,9 +118,27 @@ export default function EpubViewerClient({ url, fileName }: { url: string, fileN
 
   return (
     <div className="flex-1 w-full h-full bg-white relative border border-white/10 rounded-2xl overflow-hidden group flex">
-      {/* Resizer Handle (Native CSS or Custom logic will control the wrapper) */}
-      <div className="flex-1 h-full py-8">
+      <div className="flex-1 h-full py-8 relative">
         <div ref={viewerRef} className="w-full h-full" style={{ overflowAnchor: 'none' }} />
+        
+        {/* Ask AI Tooltip Overlay */}
+        {tooltip && (
+          <div 
+            className="absolute z-50 -translate-x-1/2 -translate-y-full pb-2 pointer-events-auto shadow-2xl"
+            style={{ left: tooltip.x, top: tooltip.y }}
+          >
+            <button 
+              onClick={() => {
+                // Placeholder action for now
+                console.log("Ask AI about:", tooltip.text)
+              }}
+              className="flex items-center gap-1.5 px-3 py-2 bg-[#121212] hover:bg-[#1a1a1a] text-white text-sm rounded-lg border border-purple-500/50 transition-all hover:scale-105 active:scale-95 shadow-xl"
+            >
+              <Bot className="w-4 h-4 text-purple-400" />
+              <span className="font-semibold tracking-wide text-xs">Ask AI</span>
+            </button>
+          </div>
+        )}
       </div>
       
       {/* Navigation Overlays */}
