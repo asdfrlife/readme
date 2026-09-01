@@ -184,6 +184,11 @@ export function Sidebar() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
+                    onClick={(e) => {
+                      if (isActive) {
+                        e.preventDefault()
+                      }
+                    }}
                     className={`flex items-center px-3 py-2.5 rounded-xl transition-all duration-200 group ${
                       isActive
                         ? 'bg-purple-500/20 text-purple-300'
