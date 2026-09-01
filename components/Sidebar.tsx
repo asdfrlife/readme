@@ -125,6 +125,7 @@ export function Sidebar() {
   }, [pathname])
 
   const links = [
+    { href: '/home', path: '/home', label: 'Home', icon: Home },
     { href: lastRead ? `/view?file=${encodeURIComponent(lastRead)}` : '/view', path: '/view', label: 'Reading', icon: BookOpen }
   ]
 

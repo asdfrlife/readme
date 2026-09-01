@@ -63,22 +63,13 @@ export default async function ViewPage(props: {
 
   return (
     <div className="h-full w-full flex flex-col p-6 bg-black overflow-hidden">
-      <div className="flex items-center justify-between mb-6 flex-shrink-0">
-        <Link 
-          href="/home"
-          className="flex items-center text-white/60 hover:text-white transition-colors"
-        >
-          <ChevronLeft className="w-5 h-5 mr-2" />
-          Back to Dashboard
-        </Link>
-        <h1 className="text-xl font-bold text-white truncate max-w-lg">
-          {fileName.replace(/^\d+_/, '')}
-        </h1>
-        <div className="w-24" /> {/* Spacer for centering title */}
-      </div>
-
       <ResizableViewerWrapper fileName={fileName}>
-        <EpubViewer url={signedUrlData.signedUrl} fileName={fileName} />
+        <div className="flex flex-col w-full h-full">
+          <h1 className="text-2xl font-bold text-white truncate w-full mb-4 px-2 tracking-tight">
+            {fileName.replace(/^\d+_/, '')}
+          </h1>
+          <EpubViewer url={signedUrlData.signedUrl} fileName={fileName} />
+        </div>
       </ResizableViewerWrapper>
     </div>
   )
