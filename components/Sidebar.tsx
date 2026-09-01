@@ -128,7 +128,7 @@ export function Sidebar() {
             setUploadProgress(0)
             setUploadBytes(0)
             setTotalBytes(0)
-            router.refresh()
+            window.dispatchEvent(new Event('book_uploaded'))
           }, 500)
         } else {
           console.error('Error uploading EPUB:', xhr.responseText)
