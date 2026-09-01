@@ -46,9 +46,6 @@ export default function EpubViewerClient({ url, fileName }: { url: string, fileN
             p, div {
               text-align: justify !important;
             }
-            ::selection {
-              background: rgba(139, 92, 246, 0.3) !important;
-            }
             a { color: #8b5cf6 !important; }
           `
           contents.addStylesheetRules(css)
@@ -64,18 +61,22 @@ export default function EpubViewerClient({ url, fileName }: { url: string, fileN
         })
 
         r.on('selected', (cfiRange: any, contents: any) => {
-          const selection = contents.window.getSelection()
-          const text = selection.toString()
-          if (!text.trim()) return
+          try {
+            const selection = contents.window.getSelection()
+            const text = selection.toString()
+            if (!text.trim()) return
 
-          const range = selection.getRangeAt(0)
-          const rect = range.getBoundingClientRect()
-          
-          setTooltip({
-            x: rect.left + (rect.width / 2),
-            y: rect.top, // position right above the top of the selection
-            text: text.trim()
-          })
+            const range = selection.getRangeAt(0)
+            const rect = range.getBoundingClientRect()
+            
+            setTooltip({
+              x: rect.left + (rect.width / 2),
+              y: Math.max(0, rect.top - 10), // slightly above
+              text: text.trim()
+            })
+          } catch (e) {
+            console.error("Selection error:", e)
+          }
         })
 
         // Clear tooltip when clicking elsewhere
