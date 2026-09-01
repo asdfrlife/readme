@@ -30,14 +30,14 @@ export default function EpubViewerClient({ url }: { url: string }) {
           flow: 'scrolled',
         })
 
-        // Optional: Set a dark theme to match the app
+        // Optional: Set a light theme for the reader
         r.hooks.content.register((contents: any) => {
           const css = `
             body { 
-              color: #e5e7eb !important; 
-              background-color: #121212 !important; 
+              color: #1a1a1a !important; 
+              background-color: #ffffff !important; 
             }
-            a { color: #c084fc !important; }
+            a { color: #8b5cf6 !important; }
           `
           contents.addStylesheetRules(css)
         })
@@ -76,7 +76,7 @@ export default function EpubViewerClient({ url }: { url: string }) {
   }
 
   return (
-    <div className="flex-1 w-full h-full bg-[#121212] relative border border-white/10 rounded-2xl overflow-hidden group">
+    <div className="flex-1 w-full h-full bg-white relative border border-white/10 rounded-2xl overflow-hidden group">
       <div ref={viewerRef} className="w-full h-full" style={{ overflowAnchor: 'none' }} />
       
       {/* Navigation Overlays */}
