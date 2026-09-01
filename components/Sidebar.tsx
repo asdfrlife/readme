@@ -146,7 +146,7 @@ export function Sidebar() {
       <div className="flex justify-center py-4 border-b border-white/10 flex-shrink-0">
         <input 
           type="file" 
-          accept="application/pdf"
+          accept="application/epub+zip, .epub"
           ref={fileInputRef}
           onChange={handleFileChange}
           className="hidden"
@@ -156,7 +156,7 @@ export function Sidebar() {
           className={`rounded-full bg-white/5 hover:bg-white/10 border border-white/20 flex items-center justify-center transition-all group ${
             isCollapsed ? 'w-10 h-10' : 'w-12 h-12'
           }`}
-          title="Import PDF"
+          title="Import EPUB"
         >
           <Plus className={`${isCollapsed ? 'w-5 h-5' : 'w-6 h-6'} text-white/70 group-hover:text-white transition-colors`} />
         </button>
@@ -223,7 +223,7 @@ export function Sidebar() {
       {isUploading && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div className="bg-[#1a1a1a] border border-white/10 p-8 rounded-2xl flex flex-col items-center max-w-sm w-full mx-4 shadow-2xl">
-            <div className="text-white font-medium mb-6 text-lg">Uploading PDF...</div>
+            <div className="text-white font-medium mb-6 text-lg">Uploading EPUB...</div>
             <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden mb-2">
               <div 
                 className="h-full bg-white transition-all duration-300 ease-out rounded-full" 

@@ -7,31 +7,31 @@ export default async function NewHomePage() {
   // Fetch user
   const { data: { user } } = await supabase.auth.getUser()
 
-  let pdfFiles: any[] = []
+  let epubFiles: any[] = []
   if (user) {
     const { data: files } = await supabase.storage
       .from('pdffiles')
       .list(user.id)
     
     // Filter out standard placeholder files (like .emptyFolderPlaceholder) if they exist
-    pdfFiles = files ? files.filter(f => f.name.endsWith('.pdf')) : []
+    epubFiles = files ? files.filter(f => f.name.endsWith('.epub')) : []
   }
 
   return (
     <div className="min-h-full w-full flex flex-col items-center p-8 bg-black">
-      {pdfFiles.length === 0 ? (
+      {epubFiles.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center">
           <div className="w-full max-w-2xl border border-white/20 p-10 rounded-2xl bg-white/5 backdrop-blur-md flex flex-col items-center text-center">
             <h1 className="text-3xl font-bold text-white mb-4">Nothing Imported</h1>
             <p className="text-white/60 mb-8">
-              Click the + button in the sidebar to import a PDF file.
+              Click the + button in the sidebar to import an EPUB file.
             </p>
           </div>
         </div>
       ) : (
         <div className="w-full max-w-[943px] flex flex-col gap-4 mt-8">
-          <h2 className="text-2xl font-bold text-white mb-6">Your Imported PDFs</h2>
-          {pdfFiles.map((file) => (
+          <h2 className="text-2xl font-bold text-white mb-6">Your Imported Books</h2>
+          {epubFiles.map((file) => (
             <div 
               key={file.id} 
               className="w-full border border-white/20 p-6 rounded-2xl bg-[#121212] flex flex-col shadow-sm"
