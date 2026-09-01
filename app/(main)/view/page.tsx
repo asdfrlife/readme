@@ -60,8 +60,8 @@ export default async function ViewPage(props: {
         <div className="w-24" /> {/* Spacer for centering title */}
       </div>
 
-      <div className="flex-1 w-full overflow-hidden flex justify-center">
-        <div className="h-full aspect-[1/1.414] max-w-full">
+      <div className="flex-1 w-full overflow-hidden flex justify-end">
+        <div className="h-full w-[920px] max-w-full">
           <EpubViewer url={signedUrlData.signedUrl} />
         </div>
       </div>
