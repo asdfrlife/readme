@@ -1,5 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { FileText } from 'lucide-react'
+import Link from 'next/link'
+import { EpubThumbnail } from '@/components/EpubThumbnail'
 
 export default async function NewHomePage() {
   const supabase = await createClient()
@@ -8,6 +10,8 @@ export default async function NewHomePage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   let epubFiles: any[] = []
+  let signedUrls: Record<string, string> = {}
+
   if (user) {
     const { data: files } = await supabase.storage
       .from('pdffiles')
@@ -15,6 +19,17 @@ export default async function NewHomePage() {
     
     // Filter out standard placeholder files (like .emptyFolderPlaceholder) if they exist
     epubFiles = files ? files.filter(f => f.name.endsWith('.epub')) : []
+
+    if (epubFiles.length > 0) {
+      const paths = epubFiles.map(f => `${user.id}/${f.name}`)
+      const { data: urls } = await supabase.storage.from('pdffiles').createSignedUrls(paths, 3600)
+      
+      if (urls) {
+        urls.forEach((urlObj, idx) => {
+          signedUrls[epubFiles[idx].name] = urlObj.signedUrl || ''
+        })
+      }
+    }
   }
 
   return (
@@ -29,21 +44,27 @@ export default async function NewHomePage() {
           </div>
         </div>
       ) : (
-        <div className="w-full max-w-[943px] flex flex-col gap-4 mt-8">
-          <h2 className="text-2xl font-bold text-white mb-6">Your Imported Books</h2>
+        <div className="w-full max-w-[943px] flex flex-col gap-6 mt-8">
+          <h2 className="text-2xl font-bold text-white mb-2">Your Imported Books</h2>
           {epubFiles.map((file) => (
-            <div 
+            <Link 
+              href={`/view?file=${encodeURIComponent(file.name)}`}
               key={file.id} 
-              className="w-full border border-white/20 p-6 rounded-2xl bg-[#121212] flex flex-col shadow-sm"
+              className="w-full h-[252px] border border-white/20 rounded-2xl bg-[#121212] flex flex-row shadow-sm hover:border-purple-500/50 hover:shadow-purple-500/10 transition-all overflow-hidden group cursor-pointer"
             >
-              <div className="flex items-center gap-3">
-                <FileText className="w-6 h-6 text-white/70" />
-                <span className="text-lg font-medium text-white truncate text-left">
-                  {/* Remove the timestamp prefix if needed, or just display raw name */}
-                  {file.name.replace(/^\d+_/, '')}
-                </span>
+              <EpubThumbnail url={signedUrls[file.name] || ''} />
+              <div className="flex flex-col p-6 flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <FileText className="w-6 h-6 text-purple-400" />
+                  <span className="text-xl font-bold text-white truncate text-left group-hover:text-purple-300 transition-colors">
+                    {file.name.replace(/^\d+_/, '')}
+                  </span>
+                </div>
+                <p className="text-white/50 text-sm mt-auto">
+                  Imported on {new Date(file.created_at).toLocaleDateString()}
+                </p>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}
