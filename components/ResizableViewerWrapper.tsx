@@ -3,18 +3,21 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 
 export function ResizableViewerWrapper({ children }: { children: React.ReactNode }) {
-  const [width, setWidth] = useState(920)
+  // A4 paper proportion minimum (approx 700px for typical screens)
+  const [width, setWidth] = useState(700)
+  const [isResizing, setIsResizing] = useState(false)
+  
   const isResizingRef = useRef(false)
   const startXRef = useRef(0)
-  const startWidthRef = useRef(920)
+  const startWidthRef = useRef(700)
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault()
     isResizingRef.current = true
+    setIsResizing(true)
     startXRef.current = e.clientX
     startWidthRef.current = width
     
-    // Add global body class to prevent text selection while dragging
     document.body.style.cursor = 'col-resize'
     document.body.style.userSelect = 'none'
   }, [width])
@@ -24,15 +27,15 @@ export function ResizableViewerWrapper({ children }: { children: React.ReactNode
       if (!isResizingRef.current) return
       
       const deltaX = startXRef.current - e.clientX
-      // Moving mouse left increases width (deltaX is positive)
-      // Min width 660px guarantees 300px of text between the 180px paddings
-      const newWidth = Math.max(660, startWidthRef.current + deltaX)
+      // Set 700px as the strict minimum for A4 proportion & preserving the 360px total padding
+      const newWidth = Math.max(700, startWidthRef.current + deltaX)
       setWidth(newWidth)
     }
 
     const handleMouseUp = () => {
       if (isResizingRef.current) {
         isResizingRef.current = false
+        setIsResizing(false)
         document.body.style.cursor = ''
         document.body.style.userSelect = ''
       }
@@ -50,8 +53,8 @@ export function ResizableViewerWrapper({ children }: { children: React.ReactNode
   return (
     <div className="flex-1 w-full overflow-hidden flex justify-end relative">
       <div 
-        style={{ width: `${width}px` }} 
-        className="h-full relative flex-shrink-0 flex max-w-full"
+        style={{ width: `${width}px`, maxWidth: '100%' }} 
+        className="h-full relative flex-shrink-0 flex"
       >
         <div 
           onMouseDown={handleMouseDown}
@@ -60,8 +63,13 @@ export function ResizableViewerWrapper({ children }: { children: React.ReactNode
         >
           <div className="w-1 h-12 bg-white/10 group-hover:bg-purple-500 rounded-full transition-colors" />
         </div>
-        <div className="flex-1 w-full h-full">
+        
+        <div className="flex-1 w-full h-full relative">
           {children}
+          {/* Transparent overlay that catches mouse events while dragging, preventing the iframe from swallowing them */}
+          {isResizing && (
+            <div className="absolute inset-0 z-50 cursor-col-resize" />
+          )}
         </div>
       </div>
     </div>
