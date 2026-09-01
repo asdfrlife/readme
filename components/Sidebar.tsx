@@ -72,47 +72,83 @@ export function Sidebar() {
     fetchProfileData()
   }, [supabase])
 
+  const [uploadBytes, setUploadBytes] = useState(0)
+  const [totalBytes, setTotalBytes] = useState(0)
+
+  const formatBytes = (bytes: number) => {
+    if (bytes === 0) return '0 B'
+    const k = 1024
+    const sizes = ['B', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+  }
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file || !uploadUser) return
 
     setIsUploading(true)
     setUploadProgress(0)
-
-    // Simulate progress while uploading
-    const interval = setInterval(() => {
-      setUploadProgress(prev => {
-        if (prev >= 90) return prev
-        return prev + 10
-      })
-    }, 200)
+    setUploadBytes(0)
+    setTotalBytes(file.size)
 
     try {
-      const { data, error } = await supabase.storage
-        .from('files')
-        .upload(`${uploadUser.id}/${Date.now()}_${file.name}`, file, {
-          cacheControl: '3600',
-          upsert: false
-        })
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) throw new Error('No active session')
 
-      if (error) {
-        console.error('Error uploading PDF:', error)
-      } else {
-        setUploadProgress(100)
-        setTimeout(() => {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+      const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      
+      const filePath = `${uploadUser.id}/${Date.now()}_${file.name}`
+      const url = `${supabaseUrl}/storage/v1/object/files/${filePath}`
+
+      const xhr = new XMLHttpRequest()
+
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percent = Math.round((event.loaded / event.total) * 100)
+          setUploadProgress(percent)
+          setUploadBytes(event.loaded)
+          setTotalBytes(event.total)
+        }
+      }
+
+      xhr.open('POST', url, true)
+      xhr.setRequestHeader('Authorization', `Bearer ${session.access_token}`)
+      xhr.setRequestHeader('apikey', anonKey!)
+      xhr.setRequestHeader('Cache-Control', '3600')
+      xhr.setRequestHeader('Content-Type', file.type || 'application/epub+zip')
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          setUploadProgress(100)
+          setUploadBytes(file.size)
+          setTimeout(() => {
+            setIsUploading(false)
+            setUploadProgress(0)
+            setUploadBytes(0)
+            setTotalBytes(0)
+            router.refresh()
+          }, 500)
+        } else {
+          console.error('Error uploading EPUB:', xhr.responseText)
           setIsUploading(false)
-          setUploadProgress(0)
-          router.refresh()
-        }, 500)
+        }
+        if (fileInputRef.current) fileInputRef.current.value = ''
       }
+
+      xhr.onerror = () => {
+        console.error('Unexpected error during upload')
+        setIsUploading(false)
+        if (fileInputRef.current) fileInputRef.current.value = ''
+      }
+
+      xhr.send(file)
+
     } catch (err) {
-      console.error('Unexpected error during upload:', err)
+      console.error('Unexpected error setting up upload:', err)
       setIsUploading(false)
-    } finally {
-      clearInterval(interval)
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ''
-      }
+      if (fileInputRef.current) fileInputRef.current.value = ''
     }
   }
 
@@ -241,13 +277,16 @@ export function Sidebar() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div className="bg-[#1a1a1a] border border-white/10 p-8 rounded-2xl flex flex-col items-center max-w-sm w-full mx-4 shadow-2xl">
             <div className="text-white font-medium mb-6 text-lg">Uploading EPUB...</div>
-            <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden mb-2">
+            <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden mb-3">
               <div 
                 className="h-full bg-white transition-all duration-300 ease-out rounded-full" 
                 style={{ width: `${uploadProgress}%` }}
               />
             </div>
-            <div className="text-white/50 text-sm font-medium">{uploadProgress}%</div>
+            <div className="flex justify-between w-full text-white/50 text-sm font-medium">
+              <span>{formatBytes(uploadBytes)} / {formatBytes(totalBytes)}</span>
+              <span>{uploadProgress}%</span>
+            </div>
           </div>
         </div>
       )}
