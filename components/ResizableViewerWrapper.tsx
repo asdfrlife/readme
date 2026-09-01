@@ -2,6 +2,8 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react'
 
+import { AiChatContainer } from './AiChatContainer'
+
 export function ResizableViewerWrapper({ children, fileName }: { children: React.ReactNode, fileName: string }) {
   // A4 paper proportion minimum (approx 700px for typical screens)
   const [width, setWidth] = useState(700)
@@ -34,7 +36,8 @@ export function ResizableViewerWrapper({ children, fileName }: { children: React
       
       const deltaX = startXRef.current - e.clientX
       // Set 700px as the strict minimum for A4 proportion & preserving the 360px total padding
-      const newWidth = Math.max(700, startWidthRef.current + deltaX)
+      // Bound the max width to 1000px so it only resizes "a little bit" and leaves room for chat
+      const newWidth = Math.min(1000, Math.max(700, startWidthRef.current + deltaX))
       setWidth(newWidth)
     }
 
@@ -57,17 +60,23 @@ export function ResizableViewerWrapper({ children, fileName }: { children: React
   }, [])
 
   return (
-    <div className="flex-1 w-full overflow-hidden flex justify-end relative">
+    <div className="flex-1 w-full overflow-hidden flex relative gap-6">
+      {/* Left AI Chat Panel */}
+      <div className="flex-1 h-full min-w-[300px] overflow-hidden">
+        <AiChatContainer />
+      </div>
+
+      {/* Right Resizable Canvas */}
       <div 
         style={{ width: `${width}px`, maxWidth: '100%' }} 
         className="h-full relative flex-shrink-0 flex"
       >
         <div 
           onMouseDown={handleMouseDown}
-          className="absolute -left-2 top-0 bottom-0 w-4 cursor-col-resize z-50 flex items-center justify-center group"
+          className="absolute -left-3 top-0 bottom-0 w-6 cursor-col-resize z-50 flex items-center justify-center group"
           title="Drag to resize"
         >
-          <div className="w-1 h-12 bg-white/10 group-hover:bg-purple-500 rounded-full transition-colors" />
+          <div className="w-1.5 h-16 bg-white/10 group-hover:bg-purple-500 rounded-full transition-colors" />
         </div>
         
         <div className="flex-1 w-full h-full relative">
