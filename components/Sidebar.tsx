@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import {
   ChevronLeft,
@@ -10,22 +10,32 @@ import {
   Home,
   User,
   LayoutDashboard,
-  Settings
+  Settings,
+  Plus
 } from 'lucide-react'
 
 export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const pathname = usePathname()
+  const router = useRouter()
   const supabase = createClient()
 
   const [profile, setProfile] = useState<{ name: string; username: string } | null>(null)
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+
+  // PDF Upload State
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const [uploadUser, setUploadUser] = useState<any>(null)
 
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
         const { data: { user }, error: authError } = await supabase.auth.getUser()
         if (authError || !user) return
+        
+        setUploadUser(user)
 
         const { data: profileData } = await supabase
           .from('profile')
@@ -61,11 +71,56 @@ export function Sidebar() {
     fetchProfileData()
   }, [supabase])
 
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !uploadUser) return
+
+    setIsUploading(true)
+    setUploadProgress(0)
+
+    // Simulate progress while uploading
+    const interval = setInterval(() => {
+      setUploadProgress(prev => {
+        if (prev >= 90) return prev
+        return prev + 10
+      })
+    }, 200)
+
+    try {
+      const { data, error } = await supabase.storage
+        .from('pdffiles')
+        .upload(`${uploadUser.id}/${Date.now()}_${file.name}`, file, {
+          cacheControl: '3600',
+          upsert: false
+        })
+
+      if (error) {
+        console.error('Error uploading PDF:', error)
+      } else {
+        setUploadProgress(100)
+        setTimeout(() => {
+          setIsUploading(false)
+          setUploadProgress(0)
+          router.refresh()
+        }, 500)
+      }
+    } catch (err) {
+      console.error('Unexpected error during upload:', err)
+      setIsUploading(false)
+    } finally {
+      clearInterval(interval)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }
+  }
+
   const links: any[] = [] // Empty for now, as Home is moved to the icon
 
   return (
-    <aside
-      className={`relative flex flex-col bg-black/40 backdrop-blur-md border-r border-white/10 transition-all duration-300 ${
+    <>
+      <aside
+        className={`relative flex flex-col bg-black/40 backdrop-blur-md border-r border-white/10 transition-all duration-300 ${
         isCollapsed ? 'w-20' : 'w-64'
       } h-screen`}
     >
@@ -85,6 +140,26 @@ export function Sidebar() {
           <LayoutDashboard className="w-8 h-8 flex-shrink-0" />
           {!isCollapsed && <span className="ml-3 font-bold text-lg text-white whitespace-nowrap">My App</span>}
         </Link>
+      </div>
+
+      {/* Import PDF Button */}
+      <div className="flex justify-center py-4 border-b border-white/10 flex-shrink-0">
+        <input 
+          type="file" 
+          accept="application/pdf"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          className="hidden"
+        />
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          className={`rounded-full bg-white/5 hover:bg-white/10 border border-white/20 flex items-center justify-center transition-all group ${
+            isCollapsed ? 'w-10 h-10' : 'w-12 h-12'
+          }`}
+          title="Import PDF"
+        >
+          <Plus className={`${isCollapsed ? 'w-5 h-5' : 'w-6 h-6'} text-white/70 group-hover:text-white transition-colors`} />
+        </button>
       </div>
 
       {/* Navigation Links */}
@@ -143,5 +218,22 @@ export function Sidebar() {
         </Link>
       </div>
     </aside>
+      
+      {/* Upload Progress Modal */}
+      {isUploading && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-[#1a1a1a] border border-white/10 p-8 rounded-2xl flex flex-col items-center max-w-sm w-full mx-4 shadow-2xl">
+            <div className="text-white font-medium mb-6 text-lg">Uploading PDF...</div>
+            <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden mb-2">
+              <div 
+                className="h-full bg-white transition-all duration-300 ease-out rounded-full" 
+                style={{ width: `${uploadProgress}%` }}
+              />
+            </div>
+            <div className="text-white/50 text-sm font-medium">{uploadProgress}%</div>
+          </div>
+        </div>
+      )}
+    </>
   )
 }
