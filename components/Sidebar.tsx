@@ -69,22 +69,22 @@ export function Sidebar() {
         isCollapsed ? 'w-20' : 'w-64'
       } h-screen`}
     >
-      {/* Top Header */}
-      <div className={`flex ${isCollapsed ? 'flex-col items-center justify-center py-4 space-y-4' : 'items-center justify-between p-4 h-16'} border-b border-white/10 transition-all`}>
-        {/* Icon on Top Left (Now a link to Home) */}
-        <Link href="/home" className={`flex items-center text-purple-400 hover:text-purple-300 transition-colors ${isCollapsed ? 'justify-center w-full' : ''}`}>
-          <LayoutDashboard className="w-8 h-8" />
-          {!isCollapsed && <span className="ml-3 font-bold text-lg text-white">My App</span>}
-        </Link>
+      {/* Toggle Button */}
+      <button
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        className="absolute -right-3 top-5 p-1 bg-[#121212] border border-white/10 hover:bg-white/10 rounded-full text-white/50 hover:text-white transition-all z-50 shadow-md"
+        title={isCollapsed ? "Expand Menu" : "Collapse Menu"}
+      >
+        {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+      </button>
 
-        {/* Toggle Button */}
-        <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className={`p-1.5 hover:bg-white/10 rounded-lg text-white/50 hover:text-white transition-colors ${isCollapsed ? 'bg-white/5' : ''}`}
-          title={isCollapsed ? "Expand Menu" : "Collapse Menu"}
-        >
-          {isCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
-        </button>
+      {/* Top Header */}
+      <div className="flex items-center h-16 px-4 border-b border-white/10 overflow-hidden flex-shrink-0">
+        {/* Icon on Top Left (Now a link to Home) */}
+        <Link href="/home" className="flex items-center text-purple-400 hover:text-purple-300 transition-colors">
+          <LayoutDashboard className="w-8 h-8 flex-shrink-0" />
+          {!isCollapsed && <span className="ml-3 font-bold text-lg text-white whitespace-nowrap">My App</span>}
+        </Link>
       </div>
 
       {/* Navigation Links */}
