@@ -1,17 +1,23 @@
-'use client'
-
 import { useState, useEffect } from 'react'
-import { Send, Bot } from 'lucide-react'
-
+import { Send, Bot, MessageSquarePlus, History, X } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
+import { createClient } from '@/utils/supabase/client'
 
-export function AiChatContainer() {
+export function AiChatContainer({ bookTitle }: { bookTitle?: string }) {
+  const supabase = createClient()
+  
   const [models, setModels] = useState<any[]>([])
   const [selectedModel, setSelectedModel] = useState<string>('')
+  
   const [message, setMessage] = useState('')
-  const [messages, setMessages] = useState<{role: 'user' | 'model', content: string}[]>([])
+  const [messages, setMessages] = useState<{role: 'user' | 'assistant', content: string}[]>([])
   const [isGenerating, setIsGenerating] = useState(false)
+  
+  const [conversationId, setConversationId] = useState<string | null>(null)
+  const [history, setHistory] = useState<any[]>([])
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false)
 
+  // Load models and fetch history
   useEffect(() => {
     const saved = localStorage.getItem('connected_ai_models')
     if (saved) {
@@ -23,7 +29,38 @@ export function AiChatContainer() {
         }
       } catch (e) {}
     }
+    
+    fetchHistory()
   }, [])
+
+  const fetchHistory = async () => {
+    const { data } = await supabase
+      .from('conversations')
+      .select('*')
+      .order('updated_at', { ascending: false })
+    
+    if (data) setHistory(data)
+  }
+
+  const loadConversation = async (id: string) => {
+    const { data } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('conversation_id', id)
+      .order('created_at', { ascending: true })
+      
+    if (data) {
+      setMessages(data as any[])
+      setConversationId(id)
+      setIsHistoryOpen(false)
+    }
+  }
+
+  const startNewChat = () => {
+    setMessages([])
+    setConversationId(null)
+    setIsHistoryOpen(false)
+  }
 
   const handleSend = async () => {
     if (!message.trim() || models.length === 0 || isGenerating) return
@@ -46,7 +83,9 @@ export function AiChatContainer() {
         body: JSON.stringify({
           apiKey,
           model: selectedModel,
-          messages: newMessages
+          messages: newMessages,
+          conversationId,
+          bookTitle
         })
       })
 
@@ -56,29 +95,51 @@ export function AiChatContainer() {
         throw new Error(data.error || 'Failed to generate response')
       }
 
-      setMessages([...newMessages, { role: 'model' as const, content: data.text }])
+      setMessages([...newMessages, { role: 'assistant' as const, content: data.text }])
+      
+      if (!conversationId && data.conversationId) {
+        setConversationId(data.conversationId)
+        fetchHistory() // Refresh history since we created a new one
+      }
     } catch (err: any) {
       console.error(err)
-      setMessages([...newMessages, { role: 'model' as const, content: `Error: ${err.message}` }])
+      setMessages([...newMessages, { role: 'assistant' as const, content: `Error: ${err.message}` }])
     } finally {
       setIsGenerating(false)
     }
   }
 
   return (
-    <div className="w-full h-full bg-[#121212] border border-white/10 rounded-2xl flex flex-col overflow-hidden shadow-sm">
-      {/* Header with Model Selector */}
+    <div className="w-full h-full bg-[#121212] border border-white/10 rounded-2xl flex flex-col overflow-hidden shadow-sm relative">
+      {/* Header with Model Selector & Actions */}
       <div className="p-4 border-b border-white/10 bg-white/5 flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <Bot className="w-5 h-5 text-purple-400" />
-          <span className="text-white font-bold">AI Assistant</span>
+          <span className="text-white font-bold hidden sm:inline">AI Assistant</span>
+          
+          <div className="flex items-center gap-1 ml-2">
+            <button 
+              onClick={startNewChat}
+              className="p-1.5 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+              title="New Chat"
+            >
+              <MessageSquarePlus className="w-4 h-4" />
+            </button>
+            <button 
+              onClick={() => setIsHistoryOpen(!isHistoryOpen)}
+              className={`p-1.5 rounded-lg transition-colors ${isHistoryOpen ? 'text-purple-400 bg-purple-500/20' : 'text-white/50 hover:text-white hover:bg-white/10'}`}
+              title="Chat History"
+            >
+              <History className="w-4 h-4" />
+            </button>
+          </div>
         </div>
         
         {models.length > 0 ? (
           <select 
             value={selectedModel}
             onChange={(e) => setSelectedModel(e.target.value)}
-            className="bg-black border border-white/20 text-white/80 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-purple-500/50 cursor-pointer"
+            className="bg-black border border-white/20 text-white/80 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-purple-500/50 cursor-pointer max-w-[150px] truncate"
           >
             {models.map(m => (
               <option key={m.id} value={m.id}>{m.name}</option>
@@ -91,6 +152,31 @@ export function AiChatContainer() {
         )}
       </div>
 
+      {/* History Dropdown Overlay */}
+      {isHistoryOpen && (
+        <div className="absolute top-[65px] left-4 right-4 z-50 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl max-h-[300px] overflow-y-auto flex flex-col p-2">
+          <div className="flex items-center justify-between px-2 pb-2 mb-2 border-b border-white/10">
+            <span className="text-white/70 text-sm font-semibold">Past Conversations</span>
+            <button onClick={() => setIsHistoryOpen(false)} className="text-white/40 hover:text-white">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          {history.length === 0 ? (
+            <p className="text-white/40 text-sm p-4 text-center">No history found.</p>
+          ) : (
+            history.map(h => (
+              <button 
+                key={h.id}
+                onClick={() => loadConversation(h.id)}
+                className={`text-left p-3 rounded-lg transition-colors text-sm truncate ${h.id === conversationId ? 'bg-purple-500/20 text-purple-300' : 'hover:bg-white/5 text-white/80'}`}
+              >
+                {h.title}
+              </button>
+            ))
+          )}
+        </div>
+      )}
+
       {/* Chat Area */}
       <div className="flex-1 p-4 overflow-y-auto flex flex-col">
         {messages.length === 0 ? (
@@ -100,7 +186,7 @@ export function AiChatContainer() {
             </div>
             <p className="text-white/40 text-sm text-center max-w-[80%]">
               {models.length > 0 
-                ? "I'm ready to help you analyze this book. Ask me anything!"
+                ? `I'm ready to help you analyze ${bookTitle ? `'${bookTitle}'` : 'this book'}. Ask me anything!`
                 : "Please connect an API key in the settings to start chatting."}
             </p>
           </div>
@@ -113,7 +199,7 @@ export function AiChatContainer() {
                     ? 'bg-purple-600 text-white rounded-2xl rounded-tr-sm'
                     : 'bg-white/10 border border-white/10 text-white rounded-2xl rounded-tl-sm'
                 }`}>
-                  <div className={`text-sm leading-relaxed ${msg.role === 'model' ? 'prose prose-invert max-w-none prose-p:leading-relaxed prose-pre:bg-black/50 prose-pre:p-2 prose-pre:rounded-lg prose-code:text-purple-300' : 'whitespace-pre-wrap'}`}>
+                  <div className={`text-sm leading-relaxed ${msg.role === 'assistant' ? 'prose prose-invert max-w-none prose-p:leading-relaxed prose-pre:bg-black/50 prose-pre:p-2 prose-pre:rounded-lg prose-code:text-purple-300' : 'whitespace-pre-wrap'}`}>
                     <ReactMarkdown>
                       {msg.content}
                     </ReactMarkdown>

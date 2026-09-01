@@ -63,7 +63,7 @@ export function ResizableViewerWrapper({ children, fileName }: { children: React
     <div className="flex-1 w-full overflow-hidden flex relative gap-6">
       {/* Left AI Chat Panel */}
       <div className="flex-1 h-full min-w-[300px] overflow-hidden">
-        <AiChatContainer />
+        <AiChatContainer bookTitle={fileName.replace(/^\d+_/, '')} />
       </div>
 
       {/* Right Resizable Canvas */}
