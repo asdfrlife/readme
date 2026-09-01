@@ -88,7 +88,7 @@ export function Sidebar() {
 
     try {
       const { data, error } = await supabase.storage
-        .from('pdffiles')
+        .from('files')
         .upload(`${uploadUser.id}/${Date.now()}_${file.name}`, file, {
           cacheControl: '3600',
           upsert: false

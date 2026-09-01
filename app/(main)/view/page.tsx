@@ -22,7 +22,7 @@ export default async function ViewPage(props: {
   }
 
   const { data: signedUrlData, error } = await supabase.storage
-    .from('pdffiles')
+    .from('files')
     .createSignedUrl(`${user.id}/${fileName}`, 3600)
 
   if (error || !signedUrlData) {

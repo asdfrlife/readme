@@ -14,7 +14,7 @@ export default async function NewHomePage() {
 
   if (user) {
     const { data: files } = await supabase.storage
-      .from('pdffiles')
+      .from('files')
       .list(user.id)
     
     // Filter out standard placeholder files (like .emptyFolderPlaceholder) if they exist
@@ -22,7 +22,7 @@ export default async function NewHomePage() {
 
     if (epubFiles.length > 0) {
       const paths = epubFiles.map(f => `${user.id}/${f.name}`)
-      const { data: urls } = await supabase.storage.from('pdffiles').createSignedUrls(paths, 3600)
+      const { data: urls } = await supabase.storage.from('files').createSignedUrls(paths, 3600)
       
       if (urls) {
         urls.forEach((urlObj, idx) => {
