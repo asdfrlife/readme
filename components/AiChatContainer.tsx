@@ -53,6 +53,13 @@ export function AiChatContainer({ bookTitle }: { bookTitle?: string }) {
 
     const handleAskAi = (e: CustomEvent) => {
       setQuotedText(e.detail)
+      setTimeout(() => {
+        const input = document.getElementById('chat-input') as HTMLInputElement
+        if (input) {
+          input.focus()
+          input.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }
+      }, 100)
     }
     window.addEventListener('ask-ai', handleAskAi as EventListener)
 
@@ -346,6 +353,13 @@ export function AiChatContainer({ bookTitle }: { bookTitle?: string }) {
             placeholder={quotedText ? "Ask about this quote..." : "Ask a question about the book..."}
             disabled={models.length === 0 || isGenerating}
             className="w-full bg-black border border-white/20 rounded-xl pl-4 pr-12 py-3 text-white placeholder-white/30 focus:outline-none focus:border-purple-500/50 transition-colors disabled:opacity-50"
+            onFocus={(e) => {
+              if (window.innerWidth < 768) {
+                setTimeout(() => {
+                  e.target.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                }, 300)
+              }
+            }}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 handleSend()
