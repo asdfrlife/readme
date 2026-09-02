@@ -29,6 +29,8 @@ export function Sidebar() {
   // Mobile Menu State
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const mobileTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
 
   const openMobileMenu = () => {
     setIsMobileOpen(true)
@@ -49,6 +51,22 @@ export function Sidebar() {
       if (mobileTimerRef.current) clearTimeout(mobileTimerRef.current)
     }
   }, [])
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        isMobileOpen &&
+        menuRef.current &&
+        !menuRef.current.contains(event.target as Node) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target as Node)
+      ) {
+        setIsMobileOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [isMobileOpen])
 
   // PDF Upload State
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -196,6 +214,7 @@ export function Sidebar() {
       {/* Mobile Floating Button */}
       <div className="md:hidden fixed top-4 left-4 z-[110]">
         <button 
+          ref={buttonRef}
           onClick={() => isMobileOpen ? setIsMobileOpen(false) : openMobileMenu()}
           className="w-12 h-12 rounded-full bg-purple-600/90 hover:bg-purple-500 backdrop-blur-md shadow-lg shadow-purple-500/20 flex items-center justify-center text-white border border-white/20 transition-all"
         >
@@ -205,6 +224,7 @@ export function Sidebar() {
 
       {/* Mobile Hovering Dropdown Menu */}
       <div 
+        ref={menuRef}
         onClick={handleMobileInteraction}
         className={`md:hidden fixed top-20 left-4 z-[100] flex flex-col gap-3 transition-all duration-300 ease-in-out ${
           isMobileOpen 

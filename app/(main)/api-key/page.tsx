@@ -10,14 +10,24 @@ export default function ApiKeyPage() {
   const [error, setError] = useState('')
   const [connectedModels, setConnectedModels] = useState<any[]>([])
 
+  const [userId, setUserId] = useState<string | null>(null)
+
   useEffect(() => {
-    // Load connected models from localStorage on mount
-    const saved = localStorage.getItem('connected_ai_models')
-    if (saved) {
-      try {
-        setConnectedModels(JSON.parse(saved))
-      } catch (e) {}
+    const fetchUser = async () => {
+      const { createClient } = await import('@/utils/supabase/client')
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        setUserId(user.id)
+        const saved = localStorage.getItem(`connected_ai_models_${user.id}`)
+        if (saved) {
+          try {
+            setConnectedModels(JSON.parse(saved))
+          } catch (e) {}
+        }
+      }
     }
+    fetchUser()
   }, [])
 
   const handleConnect = async () => {
@@ -92,7 +102,9 @@ export default function ApiKeyPage() {
       }
       
       setConnectedModels(updatedModels)
-      localStorage.setItem('connected_ai_models', JSON.stringify(updatedModels))
+      if (userId) {
+        localStorage.setItem(`connected_ai_models_${userId}`, JSON.stringify(updatedModels))
+      }
       setApiKey('')
       
     } catch (err: any) {
@@ -105,7 +117,9 @@ export default function ApiKeyPage() {
   const handleRemove = (modelId: string) => {
     const updated = connectedModels.filter(m => m.id !== modelId)
     setConnectedModels(updated)
-    localStorage.setItem('connected_ai_models', JSON.stringify(updated))
+    if (userId) {
+      localStorage.setItem(`connected_ai_models_${userId}`, JSON.stringify(updated))
+    }
   }
 
   return (
@@ -133,7 +147,7 @@ export default function ApiKeyPage() {
                 onChange={(e) => setProvider(e.target.value as 'google' | 'openrouter')}
                 className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-3 text-white appearance-none focus:outline-none focus:border-purple-500/50 transition-colors cursor-pointer"
               >
-                <option value="google" className="bg-[#1a1a1a]">Google Gemini</option>
+                <option value="google" className="bg-[#1a1a1a]">Google-Gemini 3.1 Flash Lite</option>
                 <option value="openrouter" className="bg-[#1a1a1a]">OpenRouter (All Free Models)</option>
               </select>
               <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-white/50">

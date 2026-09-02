@@ -20,16 +20,22 @@ export function AiChatContainer({ bookTitle }: { bookTitle?: string }) {
 
   // Load models and fetch history
   useEffect(() => {
-    const saved = localStorage.getItem('connected_ai_models')
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved)
-        setModels(parsed)
-        if (parsed.length > 0) {
-          setSelectedModel(parsed[0].id)
+    const fetchModelsAndUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const saved = localStorage.getItem(`connected_ai_models_${user.id}`)
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved)
+            setModels(parsed)
+            if (parsed.length > 0) {
+              setSelectedModel(parsed[0].id)
+            }
+          } catch (e) {}
         }
-      } catch (e) {}
+      }
     }
+    fetchModelsAndUser()
     
     fetchHistory()
 
@@ -241,7 +247,15 @@ export function AiChatContainer({ bookTitle }: { bookTitle?: string }) {
       )}
 
       {/* Chat Area */}
-      <div className="flex-1 p-4 overflow-y-auto flex flex-col">
+      <div 
+        className="flex-1 p-4 overflow-y-auto flex flex-col"
+        onClick={() => {
+          if (window.innerWidth < 768) {
+            const input = document.getElementById('chat-input') as HTMLInputElement
+            if (input) input.focus()
+          }
+        }}
+      >
         {messages.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center">
             <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4 border border-white/10">
@@ -325,6 +339,7 @@ export function AiChatContainer({ bookTitle }: { bookTitle?: string }) {
 
         <div className="relative flex items-center">
           <input 
+            id="chat-input"
             type="text"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
