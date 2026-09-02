@@ -16,7 +16,7 @@ export default async function NewHomePage() {
       .list(user.id)
     
     // Filter out standard placeholder files (like .emptyFolderPlaceholder) if they exist
-    epubFiles = files ? files.filter(f => f.name.endsWith('.epub')) : []
+    epubFiles = files ? files.filter(f => f.name.toLowerCase().endsWith('.epub') || f.name.toLowerCase().endsWith('.pdf')) : []
 
     if (epubFiles.length > 0) {
       const paths = epubFiles.map(f => `${user.id}/${f.name}`)

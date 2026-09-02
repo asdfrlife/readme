@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft, BookOpen } from 'lucide-react'
 import { EpubViewer } from '@/components/EpubViewer'
+import { PdfViewer } from '@/components/PdfViewer'
 import { ResizableViewerWrapper } from '@/components/ResizableViewerWrapper'
 
 export default async function ViewPage(props: {
@@ -68,7 +69,11 @@ export default async function ViewPage(props: {
           <h1 className="text-2xl font-bold text-white truncate w-full mb-4 px-2 tracking-tight">
             {fileName.replace(/^\d+_/, '')}
           </h1>
-          <EpubViewer url={signedUrlData.signedUrl} fileName={fileName} />
+          {fileName.toLowerCase().endsWith('.pdf') ? (
+            <PdfViewer url={signedUrlData.signedUrl} fileName={fileName} />
+          ) : (
+            <EpubViewer url={signedUrlData.signedUrl} fileName={fileName} />
+          )}
         </div>
       </ResizableViewerWrapper>
     </div>

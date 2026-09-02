@@ -161,7 +161,7 @@ export function Sidebar() {
       xhr.setRequestHeader('Authorization', `Bearer ${session.access_token}`)
       xhr.setRequestHeader('apikey', anonKey!)
       xhr.setRequestHeader('Cache-Control', '3600')
-      xhr.setRequestHeader('Content-Type', file.type || 'application/epub+zip')
+      xhr.setRequestHeader('Content-Type', file.type || (file.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'application/epub+zip'))
 
       xhr.onload = () => {
         if (xhr.status >= 200 && xhr.status < 300) {
@@ -266,7 +266,7 @@ export function Sidebar() {
             className="flex items-center p-3 rounded-xl transition-all duration-200 group text-white/80 hover:text-white hover:bg-white/10 w-full text-left"
           >
             <Plus className="w-5 h-5 flex-shrink-0" />
-            <span className="ml-3 font-medium pr-4">Import EPUB</span>
+            <span className="ml-3 font-medium pr-4">Import Book/PDF</span>
           </button>
 
           {/* Account Profile (Mobile) */}
@@ -287,7 +287,7 @@ export function Sidebar() {
 
       <input 
         type="file" 
-        accept="application/epub+zip, .epub"
+        accept="application/epub+zip, .epub, application/pdf, .pdf"
         ref={fileInputRef}
         onChange={handleFileChange}
         className="hidden"
@@ -354,7 +354,7 @@ export function Sidebar() {
               className={`rounded-full bg-white/5 hover:bg-white/10 border border-white/20 flex items-center justify-center transition-all group ${
                 isCollapsed ? 'w-10 h-10' : 'w-12 h-12'
               }`}
-              title="Import EPUB"
+              title="Import Book/PDF"
             >
               <Plus className={`${isCollapsed ? 'w-5 h-5' : 'w-6 h-6'} text-white/70 group-hover:text-white transition-colors`} />
             </button>
@@ -393,7 +393,7 @@ export function Sidebar() {
       {isUploading && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div className="bg-[#1a1a1a] border border-white/10 p-8 rounded-2xl flex flex-col items-center max-w-sm w-full mx-4 shadow-2xl">
-            <div className="text-white font-medium mb-6 text-lg">Uploading EPUB...</div>
+            <div className="text-white font-medium mb-6 text-lg">Uploading File...</div>
             <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden mb-3">
               <div 
                 className="h-full bg-white transition-all duration-300 ease-out rounded-full" 

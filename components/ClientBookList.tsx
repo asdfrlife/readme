@@ -27,7 +27,7 @@ export function ClientBookList({
         .from('files')
         .list(user.id)
       
-      const newEpubFiles = rawFiles ? rawFiles.filter(f => f.name.endsWith('.epub')) : []
+      const newEpubFiles = rawFiles ? rawFiles.filter(f => f.name.toLowerCase().endsWith('.epub') || f.name.toLowerCase().endsWith('.pdf')) : []
 
       if (newEpubFiles.length > 0) {
         const paths = newEpubFiles.map(f => `${user.id}/${f.name}`)
@@ -70,7 +70,13 @@ export function ClientBookList({
           key={file.id} 
           className="relative w-full h-auto sm:h-[252px] border border-white/20 rounded-2xl bg-[#121212] flex flex-col sm:flex-row shadow-sm hover:border-purple-500/50 hover:shadow-purple-500/10 transition-all overflow-hidden group cursor-pointer"
         >
-          <EpubThumbnail url={urls[file.name] || ''} />
+          {file.name.toLowerCase().endsWith('.pdf') ? (
+            <div className="w-full sm:w-[180px] h-[252px] bg-white/5 flex items-center justify-center border-r border-white/10 flex-shrink-0">
+              <FileText className="w-16 h-16 text-red-400 opacity-50" />
+            </div>
+          ) : (
+            <EpubThumbnail url={urls[file.name] || ''} />
+          )}
           <div className="flex flex-col p-6 flex-1 relative">
             <div className="flex items-center gap-3 mb-2">
               <FileText className="w-6 h-6 text-purple-400" />
