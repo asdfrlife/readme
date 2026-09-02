@@ -225,7 +225,6 @@ export function Sidebar() {
       {/* Mobile Hovering Dropdown Menu */}
       <div 
         ref={menuRef}
-        onClick={handleMobileInteraction}
         className={`md:hidden fixed top-20 left-4 z-[100] flex flex-col gap-3 transition-all duration-300 ease-in-out ${
           isMobileOpen 
             ? 'opacity-100 translate-y-0 pointer-events-auto' 
