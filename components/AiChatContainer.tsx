@@ -16,6 +16,7 @@ export function AiChatContainer({ bookTitle }: { bookTitle?: string }) {
   const [conversationId, setConversationId] = useState<string | null>(null)
   const [history, setHistory] = useState<any[]>([])
   const [isHistoryOpen, setIsHistoryOpen] = useState(false)
+  const [quotedText, setQuotedText] = useState<string | null>(null)
 
   // Load models and fetch history
   useEffect(() => {
@@ -44,8 +45,14 @@ export function AiChatContainer({ bookTitle }: { bookTitle?: string }) {
       )
       .subscribe()
 
+    const handleAskAi = (e: CustomEvent) => {
+      setQuotedText(e.detail)
+    }
+    window.addEventListener('ask-ai', handleAskAi as EventListener)
+
     return () => {
       supabase.removeChannel(channel)
+      window.removeEventListener('ask-ai', handleAskAi as EventListener)
     }
   }, [])
 
@@ -92,8 +99,18 @@ export function AiChatContainer({ bookTitle }: { bookTitle?: string }) {
     await supabase.from('conversations').delete().eq('id', id)
   }
 
-  const handleSend = async () => {
-    if (!message.trim() || models.length === 0 || isGenerating) return
+  const handleSend = async (quickActionText?: string) => {
+    let finalMessage = message.trim()
+    
+    if (quickActionText && quotedText) {
+      finalMessage = `${quickActionText}:\n> ${quotedText}`
+    } else if (quotedText && finalMessage) {
+      finalMessage = `${finalMessage}\n\n> ${quotedText}`
+    } else if (quotedText && !finalMessage) {
+      finalMessage = `> ${quotedText}`
+    }
+    
+    if (!finalMessage || models.length === 0 || isGenerating) return
 
     const apiKey = models.find(m => m.id === selectedModel)?.key
     if (!apiKey) {
@@ -101,9 +118,10 @@ export function AiChatContainer({ bookTitle }: { bookTitle?: string }) {
       return
     }
 
-    const newMessages = [...messages, { role: 'user' as const, content: message.trim() }]
+    const newMessages = [...messages, { role: 'user' as const, content: finalMessage }]
     setMessages(newMessages)
     setMessage('')
+    setQuotedText(null)
     setIsGenerating(true)
 
     try {
@@ -263,13 +281,41 @@ export function AiChatContainer({ bookTitle }: { bookTitle?: string }) {
       </div>
 
       {/* Input Area */}
-      <div className="p-4 border-t border-white/10 bg-white/5 flex-shrink-0">
+      <div className="p-4 border-t border-white/10 bg-white/5 flex-shrink-0 flex flex-col gap-3">
+        {quotedText && (
+          <div className="relative bg-black/40 backdrop-blur-md border border-purple-500/30 rounded-xl p-3 shadow-lg">
+            <button 
+              onClick={() => setQuotedText(null)}
+              className="absolute top-2 right-2 text-white/40 hover:text-white"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <div className="text-white/80 text-xs italic line-clamp-3 pr-6 border-l-2 border-purple-500 pl-2">
+              "{quotedText}"
+            </div>
+            <div className="flex items-center gap-2 mt-3">
+              <button 
+                onClick={() => handleSend("Please fact check this quote")}
+                className="px-3 py-1.5 bg-purple-500/20 hover:bg-purple-500/40 border border-purple-500/30 text-purple-200 text-xs rounded-lg transition-colors font-medium shadow-sm"
+              >
+                Fact check
+              </button>
+              <button 
+                onClick={() => handleSend("Please provide short context for this quote")}
+                className="px-3 py-1.5 bg-blue-500/20 hover:bg-blue-500/40 border border-blue-500/30 text-blue-200 text-xs rounded-lg transition-colors font-medium shadow-sm"
+              >
+                Short context
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="relative flex items-center">
           <input 
             type="text"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            placeholder="Ask a question about the book..."
+            placeholder={quotedText ? "Ask about this quote..." : "Ask a question about the book..."}
             disabled={models.length === 0 || isGenerating}
             className="w-full bg-black border border-white/20 rounded-xl pl-4 pr-12 py-3 text-white placeholder-white/30 focus:outline-none focus:border-purple-500/50 transition-colors disabled:opacity-50"
             onKeyDown={(e) => {
@@ -279,8 +325,8 @@ export function AiChatContainer({ bookTitle }: { bookTitle?: string }) {
             }}
           />
           <button 
-            disabled={models.length === 0 || !message.trim() || isGenerating}
-            onClick={handleSend}
+            disabled={models.length === 0 || (!message.trim() && !quotedText) || isGenerating}
+            onClick={() => handleSend()}
             className="absolute right-2 p-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors disabled:opacity-50 disabled:bg-white/10 disabled:text-white/30"
           >
             <Send className="w-4 h-4" />

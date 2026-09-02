@@ -64,6 +64,11 @@ export async function POST(req: Request) {
     const response = await ai.models.generateContent({
       model: model,
       contents: contents,
+      config: {
+        systemInstruction: bookTitle 
+          ? `You are an intelligent reading assistant. The user is currently reading a book titled "${bookTitle}". Answer questions, provide context, and fact-check based on the context of this book.` 
+          : undefined
+      }
     })
 
     const aiText = response.text || 'I could not generate a response.'

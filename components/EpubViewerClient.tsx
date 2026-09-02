@@ -167,7 +167,8 @@ export default function EpubViewerClient({ url, fileName }: { url: string, fileN
           >
             <button 
               onClick={() => {
-                console.log("Ask AI about:", tooltip.text)
+                window.dispatchEvent(new CustomEvent('ask-ai', { detail: tooltip.text }))
+                setTooltip(null)
               }}
               className="flex items-center gap-1.5 px-3 py-2 bg-[#121212] hover:bg-[#1a1a1a] text-white text-sm rounded-lg border border-purple-500/50 transition-all hover:scale-105 active:scale-95 shadow-xl"
             >
