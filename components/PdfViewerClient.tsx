@@ -3,12 +3,43 @@
 import { useState, useRef, useEffect } from 'react'
 import { Document, Page, pdfjs } from 'react-pdf'
 import { ChevronLeft, ChevronRight, Bot } from 'lucide-react'
+import { useInView } from 'react-intersection-observer'
 
 import 'react-pdf/dist/Page/AnnotationLayer.css'
 import 'react-pdf/dist/Page/TextLayer.css'
 
 // IMPORTANT: Bypass Next.js worker issues by using unpkg
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
+
+function VirtualizedPage({ pageNumber, width }: { pageNumber: number, width: number }) {
+  const { ref, inView } = useInView({
+    rootMargin: '100% 0px', // Pre-render 1 viewport above and below
+    triggerOnce: false
+  })
+  
+  // A4 paper aspect ratio is roughly 1:1.414
+  const scale = 0.85
+  const scaledWidth = width * scale
+  const estimatedHeight = scaledWidth * 1.414
+
+  return (
+    <div ref={ref} className="w-full flex justify-center mb-4 min-h-[400px]" style={{ minHeight: inView ? 'auto' : estimatedHeight }}>
+      {inView ? (
+        <Page 
+          pageNumber={pageNumber} 
+          width={width}
+          scale={scale}
+          className="shadow-xl"
+        />
+      ) : (
+        <div 
+          className="bg-white/5 animate-pulse rounded-xl" 
+          style={{ width: scaledWidth, height: estimatedHeight }} 
+        />
+      )}
+    </div>
+  )
+}
 
 export default function PdfViewerClient({ url, fileName }: { url: string, fileName: string }) {
   const [numPages, setNumPages] = useState<number>(0)
@@ -85,12 +116,10 @@ export default function PdfViewerClient({ url, fileName }: { url: string, fileNa
           }
         >
           {numPages > 0 && Array.from(new Array(numPages), (el, index) => (
-            <Page 
+            <VirtualizedPage 
               key={`page_${index + 1}`}
               pageNumber={index + 1} 
               width={typeof window !== 'undefined' ? Math.min(window.innerWidth - 60, 800) : 800}
-              scale={0.85}
-              className="shadow-xl mb-4"
             />
           ))}
         </Document>
