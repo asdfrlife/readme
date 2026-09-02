@@ -226,7 +226,7 @@ export default function ApiKeyPage() {
                   </div>
                   <button 
                     onClick={() => handleRemove(model.id)}
-                    className="p-2 text-white/40 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                    className="p-2 text-white/40 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors opacity-100 md:opacity-0 group-hover:opacity-100"
                     title="Remove API Key"
                   >
                     <Trash2 className="w-5 h-5" />

@@ -241,7 +241,7 @@ export function Sidebar() {
                 href={link.href}
                 onClick={(e) => {
                   if (isActive) e.preventDefault()
-                  openMobileMenu() // keep open a bit longer on click
+                  setIsMobileOpen(false)
                 }}
                 className={`flex items-center p-3 rounded-xl transition-all duration-200 group ${
                   isActive
@@ -262,7 +262,7 @@ export function Sidebar() {
           <button
             onClick={() => {
               fileInputRef.current?.click()
-              openMobileMenu()
+              setIsMobileOpen(false)
             }}
             className="flex items-center p-3 rounded-xl transition-all duration-200 group text-white/80 hover:text-white hover:bg-white/10 w-full text-left"
           >
@@ -273,7 +273,7 @@ export function Sidebar() {
           {/* Account Profile (Mobile) */}
           <Link 
             href="/account" 
-            onClick={() => openMobileMenu()}
+            onClick={() => setIsMobileOpen(false)}
             className="flex items-center p-3 rounded-xl transition-all duration-200 group text-white/80 hover:text-white hover:bg-white/10 w-full text-left"
           >
             {avatarUrl ? (
