@@ -13,7 +13,8 @@ import {
   Settings,
   Plus,
   BookOpen,
-  Key
+  Key,
+  Menu
 } from 'lucide-react'
 
 export function Sidebar() {
@@ -24,6 +25,30 @@ export function Sidebar() {
 
   const [profile, setProfile] = useState<{ name: string; username: string } | null>(null)
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+
+  // Mobile Menu State
+  const [isMobileOpen, setIsMobileOpen] = useState(false)
+  const mobileTimerRef = useRef<NodeJS.Timeout | null>(null)
+
+  const openMobileMenu = () => {
+    setIsMobileOpen(true)
+    if (mobileTimerRef.current) clearTimeout(mobileTimerRef.current)
+    mobileTimerRef.current = setTimeout(() => {
+      setIsMobileOpen(false)
+    }, 4000)
+  }
+
+  const handleMobileInteraction = () => {
+    if (isMobileOpen) {
+      openMobileMenu()
+    }
+  }
+
+  useEffect(() => {
+    return () => {
+      if (mobileTimerRef.current) clearTimeout(mobileTimerRef.current)
+    }
+  }, [])
 
   // PDF Upload State
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -156,7 +181,6 @@ export function Sidebar() {
   const [lastRead, setLastRead] = useState<string | null>(null)
 
   useEffect(() => {
-    // Check localStorage whenever the pathname changes (e.g., after they navigate to /view)
     const saved = localStorage.getItem('lastReadBook')
     if (saved) setLastRead(saved)
   }, [pathname])
@@ -169,138 +193,182 @@ export function Sidebar() {
 
   return (
     <>
-    <aside
-      className={`fixed bottom-0 md:relative flex flex-row md:flex-col bg-black/95 md:bg-black/40 backdrop-blur-md border-t md:border-t-0 md:border-r border-white/10 transition-all duration-300 ${
-      isCollapsed ? 'md:w-20' : 'md:w-64'
-      } w-full h-[72px] md:h-screen z-[100] justify-around md:justify-start items-center md:items-stretch pb-[safe-area-inset-bottom]`}
-    >
-      {/* Toggle Button */}
-      <button
-        onClick={() => setIsCollapsed(!isCollapsed)}
-        className="hidden md:block absolute -right-3 top-5 p-1 bg-[#121212] border border-white/10 hover:bg-white/10 rounded-full text-white/50 hover:text-white transition-all z-50 shadow-md"
-        title={isCollapsed ? "Expand Menu" : "Collapse Menu"}
-      >
-        {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-      </button>
-
-      {/* Top Header */}
-      <div className="hidden md:flex items-center h-16 px-4 border-b border-white/10 overflow-hidden flex-shrink-0">
-        <Link href="/home" className="flex items-center text-purple-400 hover:text-purple-300 transition-colors">
-          <LayoutDashboard className="w-8 h-8 flex-shrink-0" />
-          {!isCollapsed && <span className="ml-3 font-bold text-lg text-white whitespace-nowrap">My App</span>}
-        </Link>
-      </div>
-
-      {/* Navigation Links and Mobile Actions */}
-      <nav className="flex flex-row md:flex-col flex-1 md:overflow-y-auto md:py-4 justify-around md:justify-start items-center md:items-stretch px-1 md:px-0 w-full md:w-auto h-full md:h-auto">
-        {links.length > 0 && (
-          <ul className="flex flex-row md:flex-col w-full md:w-auto justify-around md:justify-start md:space-y-2 px-1 md:px-3">
-            {links.map((link) => {
-              const isActive = pathname === link.path
-              return (
-                <li key={link.href} className="flex-1 md:flex-none flex justify-center md:block">
-                  <Link
-                    href={link.href}
-                    onClick={(e) => {
-                      if (isActive) {
-                        e.preventDefault()
-                      }
-                    }}
-                    className={`flex flex-col md:flex-row items-center justify-center md:justify-start px-2 md:px-3 py-1.5 md:py-2.5 rounded-xl transition-all duration-200 group w-full md:w-auto ${
-                      isActive
-                        ? 'text-purple-300 md:bg-purple-500/20'
-                        : 'text-white/60 hover:text-white md:hover:bg-white/10'
-                    }`}
-                    title={isCollapsed ? link.label : undefined}
-                  >
-                    <link.icon className={`w-6 h-6 md:w-5 md:h-5 flex-shrink-0 mb-1 md:mb-0 ${isCollapsed ? 'md:mx-auto' : ''}`} />
-                    {!isCollapsed && (
-                      <span className="hidden md:block ml-3 font-medium">{link.label}</span>
-                    )}
-                    <span className="text-[10px] font-medium md:hidden">{link.label}</span>
-                  </Link>
-                </li>
-              )
-            })}
-
-            {/* Import PDF Button (Mobile inside list) */}
-            <li className="flex md:hidden flex-1 justify-center items-center">
-              <input 
-                type="file" 
-                accept="application/epub+zip, .epub"
-                ref={fileInputRef}
-                onChange={handleFileChange}
-                className="hidden"
-              />
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="flex flex-col items-center justify-center group w-full text-white/60 hover:text-white"
-                title="Import EPUB"
-              >
-                <div className="w-8 h-8 rounded-full bg-white/5 border border-white/20 flex items-center justify-center mb-1 group-hover:bg-white/10 transition-colors">
-                  <Plus className="w-5 h-5 text-white/70 group-hover:text-white transition-colors" />
-                </div>
-                <span className="text-[10px] font-medium">Import</span>
-              </button>
-            </li>
-
-            {/* Account Profile (Mobile inside list) */}
-            <li className="flex md:hidden flex-1 justify-center items-center">
-              <Link href="/account" className="flex flex-col items-center justify-center group w-full text-white/60 hover:text-white">
-                <div className="relative w-8 h-8 rounded-full bg-purple-500/30 border border-purple-500/50 flex-shrink-0 overflow-hidden flex items-center justify-center mb-1">
-                  {avatarUrl ? (
-                    <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-                  ) : (
-                    <User className="w-5 h-5 text-purple-300" />
-                  )}
-                </div>
-                <span className="text-[10px] font-medium">Profile</span>
-              </Link>
-            </li>
-          </ul>
-        )}
-
-        {/* Import PDF Button (Desktop) */}
-        <div className="hidden md:flex justify-center py-4 border-t border-b border-white/10 flex-shrink-0 mt-4 mb-4">
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className={`rounded-full bg-white/5 hover:bg-white/10 border border-white/20 flex items-center justify-center transition-all group ${
-              isCollapsed ? 'w-10 h-10' : 'w-12 h-12'
-            }`}
-            title="Import EPUB"
-          >
-            <Plus className={`${isCollapsed ? 'w-5 h-5' : 'w-6 h-6'} text-white/70 group-hover:text-white transition-colors`} />
-          </button>
-        </div>
-      </nav>
-
-      {/* Account Section at the Bottom (Desktop) */}
-      <div className="hidden md:block p-3 border-t border-white/10">
-        <Link
-          href="/account"
-          className="flex items-center w-full p-2 hover:bg-white/10 rounded-xl transition-colors group"
+      {/* Mobile Floating Button */}
+      <div className="md:hidden fixed top-4 left-4 z-[110]">
+        <button 
+          onClick={() => isMobileOpen ? setIsMobileOpen(false) : openMobileMenu()}
+          className="w-12 h-12 rounded-full bg-purple-600/90 hover:bg-purple-500 backdrop-blur-md shadow-lg shadow-purple-500/20 flex items-center justify-center text-white border border-white/20 transition-all"
         >
-          <div className="relative w-10 h-10 rounded-full bg-purple-500/30 border border-purple-500/50 flex-shrink-0 overflow-hidden flex items-center justify-center">
-            {avatarUrl ? (
-              <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-            ) : (
-              <User className="w-5 h-5 text-purple-300" />
-            )}
-          </div>
-          
-          {!isCollapsed && (
-            <div className="ml-3 flex-1 overflow-hidden">
-              <p className="text-sm font-semibold text-white truncate">
-                {profile?.name || 'Account'}
-              </p>
-              <p className="text-xs text-white/50 truncate">
-                {profile?.username ? `@${profile.username}` : 'View profile'}
-              </p>
-            </div>
-          )}
-        </Link>
+          {isMobileOpen ? <ChevronLeft className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
       </div>
-    </aside>
+
+      {/* Mobile Hovering Dropdown Menu */}
+      <div 
+        onClick={handleMobileInteraction}
+        className={`md:hidden fixed top-20 left-4 z-[100] flex flex-col gap-3 transition-all duration-300 ease-in-out ${
+          isMobileOpen 
+            ? 'opacity-100 translate-y-0 pointer-events-auto' 
+            : 'opacity-0 -translate-y-4 pointer-events-none'
+        }`}
+      >
+        <div className="flex flex-col gap-2 p-2 bg-black/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-xl">
+          {links.map((link) => {
+            const isActive = pathname === link.path
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={(e) => {
+                  if (isActive) e.preventDefault()
+                  openMobileMenu() // keep open a bit longer on click
+                }}
+                className={`flex items-center p-3 rounded-xl transition-all duration-200 group ${
+                  isActive
+                    ? 'text-purple-300 bg-purple-500/20'
+                    : 'text-white/80 hover:text-white hover:bg-white/10'
+                }`}
+                title={link.label}
+              >
+                <link.icon className="w-5 h-5 flex-shrink-0" />
+                <span className="ml-3 font-medium pr-4">{link.label}</span>
+              </Link>
+            )
+          })}
+          
+          <div className="h-px bg-white/10 w-full my-1" />
+
+          {/* Import Button (Mobile) */}
+          <button
+            onClick={() => {
+              fileInputRef.current?.click()
+              openMobileMenu()
+            }}
+            className="flex items-center p-3 rounded-xl transition-all duration-200 group text-white/80 hover:text-white hover:bg-white/10 w-full text-left"
+          >
+            <Plus className="w-5 h-5 flex-shrink-0" />
+            <span className="ml-3 font-medium pr-4">Import EPUB</span>
+          </button>
+
+          {/* Account Profile (Mobile) */}
+          <Link 
+            href="/account" 
+            onClick={() => openMobileMenu()}
+            className="flex items-center p-3 rounded-xl transition-all duration-200 group text-white/80 hover:text-white hover:bg-white/10 w-full text-left"
+          >
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="Avatar" className="w-5 h-5 rounded-full object-cover" />
+            ) : (
+              <User className="w-5 h-5 flex-shrink-0" />
+            )}
+            <span className="ml-3 font-medium pr-4">Profile</span>
+          </Link>
+        </div>
+      </div>
+
+      <input 
+        type="file" 
+        accept="application/epub+zip, .epub"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        className="hidden"
+      />
+
+      {/* Desktop Sidebar */}
+      <aside
+        className={`hidden md:flex relative flex-col bg-black/40 backdrop-blur-md border-r border-white/10 transition-all duration-300 ${
+        isCollapsed ? 'w-20' : 'w-64'
+        } h-[100dvh] z-50`}
+      >
+        {/* Toggle Button */}
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="absolute -right-3 top-5 p-1 bg-[#121212] border border-white/10 hover:bg-white/10 rounded-full text-white/50 hover:text-white transition-all z-50 shadow-md"
+          title={isCollapsed ? "Expand Menu" : "Collapse Menu"}
+        >
+          {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+        </button>
+
+        {/* Top Header */}
+        <div className="flex items-center h-16 px-4 border-b border-white/10 overflow-hidden flex-shrink-0">
+          <Link href="/home" className="flex items-center text-purple-400 hover:text-purple-300 transition-colors">
+            <LayoutDashboard className="w-8 h-8 flex-shrink-0" />
+            {!isCollapsed && <span className="ml-3 font-bold text-lg text-white whitespace-nowrap">My App</span>}
+          </Link>
+        </div>
+
+        {/* Navigation Links (Desktop) */}
+        <nav className="flex-1 overflow-y-auto py-4">
+          {links.length > 0 && (
+            <ul className="flex flex-col space-y-2 px-3">
+              {links.map((link) => {
+                const isActive = pathname === link.path
+                return (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      onClick={(e) => {
+                        if (isActive) e.preventDefault()
+                      }}
+                      className={`flex items-center px-3 py-2.5 rounded-xl transition-all duration-200 group ${
+                        isActive
+                          ? 'text-purple-300 bg-purple-500/20'
+                          : 'text-white/60 hover:text-white hover:bg-white/10'
+                      }`}
+                      title={isCollapsed ? link.label : undefined}
+                    >
+                      <link.icon className={`w-5 h-5 flex-shrink-0 ${isCollapsed ? 'mx-auto' : ''}`} />
+                      {!isCollapsed && (
+                        <span className="ml-3 font-medium">{link.label}</span>
+                      )}
+                    </Link>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+
+          {/* Import PDF Button (Desktop) */}
+          <div className="flex justify-center py-4 border-t border-b border-white/10 flex-shrink-0 mt-4 mb-4">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className={`rounded-full bg-white/5 hover:bg-white/10 border border-white/20 flex items-center justify-center transition-all group ${
+                isCollapsed ? 'w-10 h-10' : 'w-12 h-12'
+              }`}
+              title="Import EPUB"
+            >
+              <Plus className={`${isCollapsed ? 'w-5 h-5' : 'w-6 h-6'} text-white/70 group-hover:text-white transition-colors`} />
+            </button>
+          </div>
+        </nav>
+
+        {/* Account Section at the Bottom (Desktop) */}
+        <div className="p-3 border-t border-white/10">
+          <Link
+            href="/account"
+            className="flex items-center w-full p-2 hover:bg-white/10 rounded-xl transition-colors group"
+          >
+            <div className="relative w-10 h-10 rounded-full bg-purple-500/30 border border-purple-500/50 flex-shrink-0 overflow-hidden flex items-center justify-center">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <User className="w-5 h-5 text-purple-300" />
+              )}
+            </div>
+            
+            {!isCollapsed && (
+              <div className="ml-3 flex-1 overflow-hidden">
+                <p className="text-sm font-semibold text-white truncate">
+                  {profile?.name || 'Account'}
+                </p>
+                <p className="text-xs text-white/50 truncate">
+                  {profile?.username ? `@${profile.username}` : 'View profile'}
+                </p>
+              </div>
+            )}
+          </Link>
+        </div>
+      </aside>
       
       {/* Upload Progress Modal */}
       {isUploading && (
