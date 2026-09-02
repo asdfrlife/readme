@@ -12,32 +12,13 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/b
 
 export default function PdfViewerClient({ url, fileName }: { url: string, fileName: string }) {
   const [numPages, setNumPages] = useState<number>(0)
-  const [pageNumber, setPageNumber] = useState<number>(1)
   const [tooltip, setTooltip] = useState<{ x: number, y: number, text: string } | null>(null)
   
   const containerRef = useRef<HTMLDivElement>(null)
 
   function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
     setNumPages(numPages)
-    
-    // Load last read position
-    const savedPage = localStorage.getItem(`pdf_progress_${fileName}`)
-    if (savedPage) {
-      setPageNumber(parseInt(savedPage, 10))
-    }
   }
-
-  const changePage = (offset: number) => {
-    setPageNumber(prevPageNumber => {
-      const newPage = prevPageNumber + offset
-      localStorage.setItem(`pdf_progress_${fileName}`, newPage.toString())
-      return newPage
-    })
-    setTooltip(null)
-  }
-
-  const prev = () => changePage(-1)
-  const next = () => changePage(1)
 
   // Handle text selection to show Ask AI tooltip
   useEffect(() => {
@@ -53,15 +34,20 @@ export default function PdfViewerClient({ url, fileName }: { url: string, fileNa
 
       if (selection.rangeCount > 0) {
         const range = selection.getRangeAt(0)
-        const rect = range.getBoundingClientRect()
-        const containerRect = containerRef.current?.getBoundingClientRect()
+        const rects = range.getClientRects()
+        
+        if (rects.length > 0) {
+          const rect = rects[0] // get the exact bounding box of the first selected word
+          const containerRect = containerRef.current?.getBoundingClientRect()
+          const container = containerRef.current
 
-        if (containerRect && rect.width > 0) {
-          setTooltip({
-            x: rect.left - containerRect.left,
-            y: rect.top - containerRect.top,
-            text: text.trim()
-          })
+          if (containerRect && container && rect.width > 0 && rect.height > 0) {
+            setTooltip({
+              x: rect.left - containerRect.left + container.scrollLeft,
+              y: rect.top - containerRect.top + container.scrollTop,
+              text: text.trim()
+            })
+          }
         }
       }
     }
@@ -98,13 +84,14 @@ export default function PdfViewerClient({ url, fileName }: { url: string, fileNa
             </div>
           }
         >
-          {numPages > 0 && (
+          {numPages > 0 && Array.from(new Array(numPages), (el, index) => (
             <Page 
-              pageNumber={pageNumber} 
+              key={`page_${index + 1}`}
+              pageNumber={index + 1} 
               width={typeof window !== 'undefined' ? Math.min(window.innerWidth - 60, 800) : 800}
-              className="shadow-xl"
+              className="shadow-xl mb-4"
             />
-          )}
+          ))}
         </Document>
 
         {/* Ask AI Tooltip Overlay */}
@@ -127,28 +114,7 @@ export default function PdfViewerClient({ url, fileName }: { url: string, fileNa
         )}
       </div>
 
-      {/* Navigation Overlays */}
-      <div className="absolute bottom-6 right-6 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-        <button 
-          onClick={prev}
-          disabled={pageNumber <= 1}
-          className="p-3 bg-black/80 hover:bg-black text-white rounded-full backdrop-blur-md border border-white/10 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-          title="Previous Page"
-        >
-          <ChevronLeft className="w-6 h-6" />
-        </button>
-        <span className="bg-black/80 text-white px-3 py-1.5 rounded-full text-sm font-medium backdrop-blur-md">
-          {pageNumber} / {numPages || '-'}
-        </span>
-        <button 
-          onClick={next}
-          disabled={pageNumber >= numPages}
-          className="p-3 bg-black/80 hover:bg-black text-white rounded-full backdrop-blur-md border border-white/10 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-          title="Next Page"
-        >
-          <ChevronRight className="w-6 h-6" />
-        </button>
-      </div>
+
       
       <style>{`
         .custom-scrollbar::-webkit-scrollbar {
