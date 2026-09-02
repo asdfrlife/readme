@@ -162,7 +162,7 @@ export default function EpubViewerClient({ url, fileName }: { url: string, fileN
         {/* Ask AI Tooltip Overlay */}
         {tooltip && !errorMsg && (
           <div 
-            className="absolute z-50 -translate-y-full pb-2 pointer-events-auto shadow-2xl"
+            className="absolute z-50 -translate-y-full pb-1 pointer-events-auto shadow-2xl"
             style={{ left: tooltip.x, top: tooltip.y }}
           >
             <button 
