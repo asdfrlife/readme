@@ -268,11 +268,11 @@ export function AiChatContainer({ bookTitle }: { bookTitle?: string }) {
             <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4 border border-white/10">
               <Bot className="w-6 h-6 text-white/40" />
             </div>
-            <p className="text-white/40 text-sm text-center max-w-[80%]">
-              {models.length > 0 
-                ? `I'm ready to help you analyze ${bookTitle ? `'${bookTitle}'` : 'this book'}. Ask me anything!`
-                : "Please connect an API key in the settings to start chatting."}
-            </p>
+            {models.length === 0 && (
+              <p className="text-white/40 text-sm text-center max-w-[80%]">
+                Please connect an API key in the settings to start chatting.
+              </p>
+            )}
           </div>
         ) : (
           <div className="flex flex-col gap-2">

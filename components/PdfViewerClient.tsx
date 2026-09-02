@@ -54,42 +54,47 @@ export default function PdfViewerClient({ url, fileName }: { url: string, fileNa
   // Handle text selection to show Ask AI tooltip
   useEffect(() => {
     const handleMouseUp = () => {
-      const selection = window.getSelection()
-      if (!selection) return
-      
-      const text = selection.toString()
-      if (!text.trim()) {
-        setTooltip(null)
-        return
-      }
-
-      if (selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0)
-        const rects = range.getClientRects()
+      // Small timeout to allow mobile native selection to settle before grabbing
+      setTimeout(() => {
+        const selection = window.getSelection()
+        if (!selection) return
         
-        if (rects.length > 0) {
-          const rect = rects[0] // get the exact bounding box of the first selected word
-          const containerRect = containerRef.current?.getBoundingClientRect()
-          const container = containerRef.current
+        const text = selection.toString()
+        if (!text.trim()) {
+          setTooltip(null)
+          return
+        }
 
-          if (containerRect && container && rect.width > 0 && rect.height > 0) {
-            setTooltip({
-              x: rect.left - containerRect.left + container.scrollLeft,
-              y: rect.top - containerRect.top + container.scrollTop,
-              text: text.trim()
-            })
+        if (selection.rangeCount > 0) {
+          const range = selection.getRangeAt(0)
+          const rects = range.getClientRects()
+          
+          if (rects.length > 0) {
+            const rect = rects[0] // get the exact bounding box of the first selected word
+            const containerRect = containerRef.current?.getBoundingClientRect()
+            const container = containerRef.current
+
+            if (containerRect && container && rect.width > 0 && rect.height > 0) {
+              setTooltip({
+                x: rect.left - containerRect.left + container.scrollLeft,
+                y: rect.top - containerRect.top + container.scrollTop,
+                text: text.trim()
+              })
+            }
           }
         }
-      }
+      }, 50)
     }
 
     const container = containerRef.current
     if (container) {
       container.addEventListener('mouseup', handleMouseUp)
+      container.addEventListener('touchend', handleMouseUp)
     }
     return () => {
       if (container) {
         container.removeEventListener('mouseup', handleMouseUp)
+        container.removeEventListener('touchend', handleMouseUp)
       }
     }
   }, [])
