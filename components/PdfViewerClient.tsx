@@ -50,7 +50,7 @@ const VirtualizedPage = React.memo(function VirtualizedPage({ pageNumber, width 
 
 export default function PdfViewerClient({ url, fileName }: { url: string, fileName: string }) {
   const [numPages, setNumPages] = useState<number>(0)
-  const [tooltip, setTooltip] = useState<{ x: number, y: number, text: string } | null>(null)
+  const [tooltip, setTooltip] = useState<{ x: number, y: number, text: string, isMobile?: boolean } | null>(null)
   
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -87,14 +87,16 @@ export default function PdfViewerClient({ url, fileName }: { url: string, fileNa
           const rects = range.getClientRects()
           
           if (rects.length > 0) {
-            const rect = rects[0] // get the exact bounding box of the first selected word
+            const isMobile = window.innerWidth < 768
+            const targetRect = isMobile ? rects[rects.length - 1] : rects[0] // end of selection for mobile, start for desktop
             const containerRect = container.getBoundingClientRect()
 
-            if (containerRect && rect.width > 0 && rect.height > 0) {
+            if (containerRect && targetRect.width > 0 && targetRect.height > 0) {
               setTooltip({
-                x: rect.left - containerRect.left + container.scrollLeft,
-                y: rect.top - containerRect.top + container.scrollTop,
-                text: text.trim()
+                x: (isMobile ? targetRect.right : targetRect.left) - containerRect.left + container.scrollLeft,
+                y: (isMobile ? targetRect.bottom : targetRect.top) - containerRect.top + container.scrollTop,
+                text: text.trim(),
+                isMobile
               })
             }
           }
@@ -144,7 +146,9 @@ export default function PdfViewerClient({ url, fileName }: { url: string, fileNa
         {/* Ask AI Tooltip Overlay */}
         {tooltip && (
           <div 
-            className="absolute z-50 -translate-y-full pb-1 pointer-events-auto shadow-2xl"
+            className={`absolute z-50 pointer-events-auto shadow-2xl ${
+              tooltip.isMobile ? 'mt-2 ml-2' : '-translate-y-full pb-1'
+            }`}
             style={{ left: tooltip.x, top: tooltip.y }}
           >
             <button 
