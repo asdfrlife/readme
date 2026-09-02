@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { Document, Page, pdfjs } from 'react-pdf'
 import { ChevronLeft, ChevronRight, Bot } from 'lucide-react'
 import { useInView } from 'react-intersection-observer'
@@ -11,7 +11,13 @@ import 'react-pdf/dist/Page/TextLayer.css'
 // IMPORTANT: Bypass Next.js worker issues by using unpkg
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
 
-function VirtualizedPage({ pageNumber, width }: { pageNumber: number, width: number }) {
+const pdfOptions = {
+  cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/cmaps/`,
+  cMapPacked: true,
+  standardFontDataUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/standard_fonts/`,
+}
+
+const VirtualizedPage = React.memo(function VirtualizedPage({ pageNumber, width }: { pageNumber: number, width: number }) {
   const { ref, inView } = useInView({
     rootMargin: '100% 0px', // Pre-render 1 viewport above and below
     triggerOnce: false
@@ -29,6 +35,7 @@ function VirtualizedPage({ pageNumber, width }: { pageNumber: number, width: num
           pageNumber={pageNumber} 
           width={width}
           scale={scale}
+          renderAnnotationLayer={false}
           className="shadow-xl"
         />
       ) : (
@@ -39,7 +46,7 @@ function VirtualizedPage({ pageNumber, width }: { pageNumber: number, width: num
       )}
     </div>
   )
-}
+})
 
 export default function PdfViewerClient({ url, fileName }: { url: string, fileName: string }) {
   const [numPages, setNumPages] = useState<number>(0)
@@ -111,6 +118,7 @@ export default function PdfViewerClient({ url, fileName }: { url: string, fileNa
       >
         <Document 
           file={url} 
+          options={pdfOptions}
           onLoadSuccess={onDocumentLoadSuccess}
           loading={
             <div className="flex flex-col items-center justify-center mt-20">
