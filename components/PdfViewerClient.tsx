@@ -18,7 +18,7 @@ function VirtualizedPage({ pageNumber, width }: { pageNumber: number, width: num
   })
   
   // A4 paper aspect ratio is roughly 1:1.414
-  const scale = typeof window !== 'undefined' && window.innerWidth < 768 ? 0.95 : 0.85
+  const scale = typeof window !== 'undefined' && window.innerWidth < 768 ? 1.2 : 0.85
   const scaledWidth = width * scale
   const estimatedHeight = scaledWidth * 1.414
 
@@ -119,7 +119,7 @@ export default function PdfViewerClient({ url, fileName }: { url: string, fileNa
             <VirtualizedPage 
               key={`page_${index + 1}`}
               pageNumber={index + 1} 
-              width={typeof window !== 'undefined' ? Math.min(window.innerWidth - 60, 800) : 800}
+              width={typeof window !== 'undefined' ? Math.min(window.innerWidth - (window.innerWidth < 768 ? 16 : 60), 800) : 800}
             />
           ))}
         </Document>
