@@ -53,14 +53,24 @@ export default function PdfViewerClient({ url, fileName }: { url: string, fileNa
 
   // Handle text selection to show Ask AI tooltip
   useEffect(() => {
-    const handleMouseUp = () => {
-      // Small timeout to allow mobile native selection to settle before grabbing
-      setTimeout(() => {
+    let timeoutId: NodeJS.Timeout
+
+    const handleSelectionChange = () => {
+      // Debounce to allow mobile native selection to settle
+      clearTimeout(timeoutId)
+      timeoutId = setTimeout(() => {
         const selection = window.getSelection()
         if (!selection) return
         
         const text = selection.toString()
         if (!text.trim()) {
+          setTooltip(null)
+          return
+        }
+
+        // CRITICAL: Ensure the selection is actually inside the PDF container
+        const container = containerRef.current
+        if (!container || !selection.anchorNode || !container.contains(selection.anchorNode)) {
           setTooltip(null)
           return
         }
@@ -71,10 +81,9 @@ export default function PdfViewerClient({ url, fileName }: { url: string, fileNa
           
           if (rects.length > 0) {
             const rect = rects[0] // get the exact bounding box of the first selected word
-            const containerRect = containerRef.current?.getBoundingClientRect()
-            const container = containerRef.current
+            const containerRect = container.getBoundingClientRect()
 
-            if (containerRect && container && rect.width > 0 && rect.height > 0) {
+            if (containerRect && rect.width > 0 && rect.height > 0) {
               setTooltip({
                 x: rect.left - containerRect.left + container.scrollLeft,
                 y: rect.top - containerRect.top + container.scrollTop,
@@ -83,19 +92,14 @@ export default function PdfViewerClient({ url, fileName }: { url: string, fileNa
             }
           }
         }
-      }, 50)
+      }, 100) // 100ms debounce is perfect for mobile dragging
     }
 
-    const container = containerRef.current
-    if (container) {
-      container.addEventListener('mouseup', handleMouseUp)
-      container.addEventListener('touchend', handleMouseUp)
-    }
+    document.addEventListener('selectionchange', handleSelectionChange)
+    
     return () => {
-      if (container) {
-        container.removeEventListener('mouseup', handleMouseUp)
-        container.removeEventListener('touchend', handleMouseUp)
-      }
+      document.removeEventListener('selectionchange', handleSelectionChange)
+      clearTimeout(timeoutId)
     }
   }, [])
 
