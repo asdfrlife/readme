@@ -89,6 +89,7 @@ export default function PdfViewerClient({ url, fileName }: { url: string, fileNa
               key={`page_${index + 1}`}
               pageNumber={index + 1} 
               width={typeof window !== 'undefined' ? Math.min(window.innerWidth - 60, 800) : 800}
+              scale={0.85}
               className="shadow-xl mb-4"
             />
           ))}
