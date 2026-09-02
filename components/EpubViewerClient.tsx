@@ -87,11 +87,11 @@ export default function EpubViewerClient({ url, fileName }: { url: string, fileN
             const containerRect = viewerRef.current?.getBoundingClientRect() || { left: 0, top: 0 }
             
             const absoluteLeft = rect.left + iframeRect.left - containerRect.left
-            const absoluteTop = rect.top + iframeRect.top - containerRect.top
+            const absoluteBottom = rect.bottom + iframeRect.top - containerRect.top
             
             setTooltip({
               x: absoluteLeft + (rect.width / 2),
-              y: Math.max(0, absoluteTop - 10), // slightly above
+              y: absoluteBottom + 5, // slightly below the text
               text: text.trim()
             })
           } catch (e) {
@@ -162,7 +162,7 @@ export default function EpubViewerClient({ url, fileName }: { url: string, fileN
         {/* Ask AI Tooltip Overlay */}
         {tooltip && !errorMsg && (
           <div 
-            className="absolute z-50 -translate-x-1/2 -translate-y-full pb-2 pointer-events-auto shadow-2xl"
+            className="absolute z-50 -translate-x-1/2 pt-2 pointer-events-auto shadow-2xl"
             style={{ left: tooltip.x, top: tooltip.y }}
           >
             <button 
