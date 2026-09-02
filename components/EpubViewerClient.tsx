@@ -10,18 +10,23 @@ export default function EpubViewerClient({ url, fileName }: { url: string, fileN
   const [atStart, setAtStart] = useState(true)
   const [atEnd, setAtEnd] = useState(false)
   const [tooltip, setTooltip] = useState<{ x: number, y: number, text: string } | null>(null)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   useEffect(() => {
     if (!viewerRef.current) return
 
     let book: any = null
+    let isMounted = true
 
     const loadBook = async () => {
       try {
+        setErrorMsg(null)
         const response = await fetch(url)
-        if (!response.ok) throw new Error('Failed to fetch EPUB')
+        if (!response.ok) throw new Error(`Failed to fetch EPUB: ${response.statusText}`)
         const buffer = await response.arrayBuffer()
         
+        if (!isMounted) return
+
         book = ePub(buffer)
         
         const r = book.renderTo(viewerRef.current, {
@@ -33,22 +38,26 @@ export default function EpubViewerClient({ url, fileName }: { url: string, fileN
 
         // Optional: Set a light theme for the reader
         r.hooks.content.register((contents: any) => {
-          const css = `
-            body { 
-              color: #1a1a1a !important; 
-              background-color: #ffffff !important; 
-              padding-left: 180px !important;
-              padding-right: 180px !important;
-              box-sizing: border-box !important;
-              margin: 0 auto !important;
-              max-width: 100% !important;
-            }
-            p, div {
-              text-align: justify !important;
-            }
-            a { color: #8b5cf6 !important; }
-          `
-          contents.addStylesheetRules(css)
+          try {
+            const css = `
+              body { 
+                color: #1a1a1a !important; 
+                background-color: #ffffff !important; 
+                padding-left: 8% !important;
+                padding-right: 8% !important;
+                box-sizing: border-box !important;
+                margin: 0 auto !important;
+                max-width: 100% !important;
+              }
+              p, div {
+                text-align: justify !important;
+              }
+              a { color: #8b5cf6 !important; }
+            `
+            contents.addStylesheetRules(css)
+          } catch (e: any) {
+            console.error("Stylesheet error:", e)
+          }
         })
 
         r.on('relocated', (location: any) => {
@@ -90,47 +99,58 @@ export default function EpubViewerClient({ url, fileName }: { url: string, fileN
         } else {
           await r.display()
         }
-        setRendition(r)
-      } catch (err) {
+        
+        if (isMounted) {
+          setRendition(r)
+        }
+      } catch (err: any) {
         console.error('Error rendering EPUB:', err)
+        if (isMounted) setErrorMsg(err.message || 'Unknown error occurred')
       }
     }
 
     loadBook()
 
     return () => {
+      isMounted = false
       if (book) {
-        book.destroy()
+        try {
+          book.destroy()
+        } catch(e) {}
       }
     }
-  }, [url])
+  }, [url, fileName])
 
   const next = () => {
-    if (rendition) {
-      rendition.next()
-    }
+    if (rendition) rendition.next()
   }
 
   const prev = () => {
-    if (rendition) {
-      rendition.prev()
-    }
+    if (rendition) rendition.prev()
   }
 
   return (
     <div className="flex-1 w-full h-full bg-white relative border border-white/10 rounded-2xl overflow-hidden group flex">
       <div className="flex-1 h-full py-8 relative">
+        {errorMsg && (
+          <div className="absolute inset-0 flex items-center justify-center bg-red-500/10 z-50">
+            <div className="bg-red-500 text-white p-4 rounded-xl shadow-lg max-w-[80%] text-center">
+              <h3 className="font-bold mb-2">Error Loading Book</h3>
+              <p className="font-mono text-sm">{errorMsg}</p>
+            </div>
+          </div>
+        )}
+        
         <div ref={viewerRef} className="w-full h-full" style={{ overflowAnchor: 'none' }} />
         
         {/* Ask AI Tooltip Overlay */}
-        {tooltip && (
+        {tooltip && !errorMsg && (
           <div 
             className="absolute z-50 -translate-x-1/2 -translate-y-full pb-2 pointer-events-auto shadow-2xl"
             style={{ left: tooltip.x, top: tooltip.y }}
           >
             <button 
               onClick={() => {
-                // Placeholder action for now
                 console.log("Ask AI about:", tooltip.text)
               }}
               className="flex items-center gap-1.5 px-3 py-2 bg-[#121212] hover:bg-[#1a1a1a] text-white text-sm rounded-lg border border-purple-500/50 transition-all hover:scale-105 active:scale-95 shadow-xl"
