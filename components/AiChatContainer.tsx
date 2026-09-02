@@ -259,7 +259,16 @@ export function AiChatContainer({ bookTitle }: { bookTitle?: string }) {
                     : 'bg-white/10 border border-white/10 text-white rounded-2xl rounded-tl-sm'
                 }`}>
                   <div className={`text-sm leading-relaxed ${msg.role === 'assistant' ? 'prose prose-invert max-w-none prose-p:leading-relaxed prose-pre:bg-black/50 prose-pre:p-2 prose-pre:rounded-lg prose-code:text-purple-300' : 'whitespace-pre-wrap'}`}>
-                    <ReactMarkdown>
+                    <ReactMarkdown
+                      components={msg.role === 'user' ? {
+                        blockquote: ({node, ...props}) => (
+                          <blockquote 
+                            className="mt-2 mb-1 pl-3 border-l-[3px] border-white/50 italic bg-black/20 py-2 pr-3 rounded-r-lg text-white/90 text-sm shadow-inner" 
+                            {...props} 
+                          />
+                        )
+                      } : undefined}
+                    >
                       {msg.content}
                     </ReactMarkdown>
                   </div>
