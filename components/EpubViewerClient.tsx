@@ -78,9 +78,20 @@ export default function EpubViewerClient({ url, fileName }: { url: string, fileN
             const range = selection.getRangeAt(0)
             const rect = range.getBoundingClientRect()
             
+            // The rect is relative to the iframe. We need the iframe's offset relative to the viewport.
+            const iframe = contents.document.defaultView?.frameElement
+            const iframeRect = iframe ? iframe.getBoundingClientRect() : { left: 0, top: 0 }
+            
+            // To make it relative to the parent container (which is `relative`), 
+            // we subtract the container's own getBoundingClientRect offset.
+            const containerRect = viewerRef.current?.getBoundingClientRect() || { left: 0, top: 0 }
+            
+            const absoluteLeft = rect.left + iframeRect.left - containerRect.left
+            const absoluteTop = rect.top + iframeRect.top - containerRect.top
+            
             setTooltip({
-              x: rect.left + (rect.width / 2),
-              y: Math.max(0, rect.top - 10), // slightly above
+              x: absoluteLeft + (rect.width / 2),
+              y: Math.max(0, absoluteTop - 10), // slightly above
               text: text.trim()
             })
           } catch (e) {
@@ -88,7 +99,12 @@ export default function EpubViewerClient({ url, fileName }: { url: string, fileN
           }
         })
 
-        // Clear tooltip when clicking elsewhere
+        // Clear tooltip when selection is cleared
+        r.on('unselected', () => {
+          setTooltip(null)
+        })
+        
+        // Fallback clear when clicking elsewhere
         r.on('click', () => {
           setTooltip(null)
         })
