@@ -109,8 +109,8 @@ export default function ApiKeyPage() {
   }
 
   return (
-    <div className="h-full w-full flex flex-col items-center p-8 bg-black overflow-y-auto">
-      <div className="w-full max-w-3xl flex flex-col gap-8 mt-8">
+    <div className="h-full w-full flex flex-col items-center p-4 md:p-8 bg-black overflow-y-auto">
+      <div className="w-full max-w-3xl flex flex-col gap-4 md:gap-8 mt-4 md:mt-8">
         
         {/* Header */}
         <div>
@@ -124,7 +124,7 @@ export default function ApiKeyPage() {
         </div>
 
         {/* Input Section */}
-        <div className="bg-[#121212] border border-white/10 rounded-2xl p-8 shadow-sm flex flex-col gap-6">
+        <div className="bg-[#121212] border border-white/10 rounded-2xl p-4 md:p-8 shadow-sm flex flex-col gap-4 md:gap-6">
           <div className="flex flex-col gap-2">
             <label className="text-white font-medium">Select Provider</label>
             <div className="relative">
@@ -181,7 +181,7 @@ export default function ApiKeyPage() {
         </div>
 
         {/* Connected Models Container */}
-        <div className="bg-[#121212] border border-white/10 rounded-2xl p-8 shadow-sm flex flex-col gap-6 mb-12">
+        <div className="bg-[#121212] border border-white/10 rounded-2xl p-4 md:p-8 shadow-sm flex flex-col gap-4 md:gap-6 mb-12">
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             <Cpu className="w-6 h-6 text-purple-400" />
             Connected Models ({connectedModels.length})

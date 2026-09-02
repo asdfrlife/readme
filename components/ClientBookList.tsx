@@ -68,7 +68,7 @@ export function ClientBookList({
         <Link 
           href={`/view?file=${encodeURIComponent(file.name)}`}
           key={file.id} 
-          className="relative w-full h-[252px] border border-white/20 rounded-2xl bg-[#121212] flex flex-row shadow-sm hover:border-purple-500/50 hover:shadow-purple-500/10 transition-all overflow-hidden group cursor-pointer"
+          className="relative w-full h-auto sm:h-[252px] border border-white/20 rounded-2xl bg-[#121212] flex flex-col sm:flex-row shadow-sm hover:border-purple-500/50 hover:shadow-purple-500/10 transition-all overflow-hidden group cursor-pointer"
         >
           <EpubThumbnail url={urls[file.name] || ''} />
           <div className="flex flex-col p-6 flex-1 relative">

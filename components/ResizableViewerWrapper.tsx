@@ -60,20 +60,26 @@ export function ResizableViewerWrapper({ children, fileName }: { children: React
   }, [])
 
   return (
-    <div className="flex-1 w-full overflow-hidden flex relative gap-6">
+    <div className="flex-1 w-full overflow-y-auto lg:overflow-hidden flex flex-col-reverse lg:flex-row relative gap-6 pb-6 lg:pb-0">
+      <style>{`
+        .resizable-panel { width: 100%; }
+        @media (min-width: 1024px) {
+          .resizable-panel { width: ${width}px; }
+        }
+      `}</style>
+
       {/* Left AI Chat Panel */}
-      <div className="flex-1 h-full min-w-[300px] overflow-hidden">
+      <div className="w-full lg:flex-1 h-[500px] lg:h-full lg:min-w-[300px] overflow-hidden flex-shrink-0">
         <AiChatContainer bookTitle={fileName.replace(/^\d+_/, '')} />
       </div>
 
       {/* Right Resizable Canvas */}
       <div 
-        style={{ width: `${width}px`, maxWidth: '100%' }} 
-        className="h-full relative flex-shrink-0 flex"
+        className="resizable-panel h-[70vh] min-h-[500px] lg:h-full relative flex-shrink-0 flex max-w-full"
       >
         <div 
           onMouseDown={handleMouseDown}
-          className="absolute -left-3 top-0 bottom-0 w-6 cursor-col-resize z-50 flex items-center justify-center group"
+          className="hidden lg:flex absolute -left-3 top-0 bottom-0 w-6 cursor-col-resize z-50 items-center justify-center group"
           title="Drag to resize"
         >
           <div className="w-1.5 h-16 bg-white/10 group-hover:bg-purple-500 rounded-full transition-colors" />
@@ -83,7 +89,7 @@ export function ResizableViewerWrapper({ children, fileName }: { children: React
           {children}
           {/* Transparent overlay that catches mouse events while dragging, preventing the iframe from swallowing them */}
           {isResizing && (
-            <div className="absolute inset-0 z-50 cursor-col-resize" />
+            <div className="hidden lg:block absolute inset-0 z-50 cursor-col-resize" />
           )}
         </div>
       </div>

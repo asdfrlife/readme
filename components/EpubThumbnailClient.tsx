@@ -53,7 +53,7 @@ export default function EpubThumbnailClient({ url }: { url: string }) {
   }, [url])
 
   return (
-    <div className="w-[133px] h-[252px] bg-white/5 flex flex-col items-center justify-center overflow-hidden flex-shrink-0 relative border-r border-white/10">
+    <div className="w-full h-[200px] sm:w-[133px] sm:h-[252px] bg-white/5 flex flex-col items-center justify-center overflow-hidden flex-shrink-0 relative border-b sm:border-b-0 sm:border-r border-white/10">
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/20 z-10">
           <div className="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />

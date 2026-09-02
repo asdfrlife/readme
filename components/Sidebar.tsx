@@ -169,57 +169,36 @@ export function Sidebar() {
 
   return (
     <>
-      <aside
-        className={`relative flex flex-col bg-black/40 backdrop-blur-md border-r border-white/10 transition-all duration-300 ${
-        isCollapsed ? 'w-20' : 'w-64'
-      } h-screen`}
+    <aside
+      className={`fixed bottom-0 md:relative flex flex-row md:flex-col bg-black/95 md:bg-black/40 backdrop-blur-md border-t md:border-t-0 md:border-r border-white/10 transition-all duration-300 ${
+      isCollapsed ? 'md:w-20' : 'md:w-64'
+      } w-full h-[72px] md:h-screen z-[100] justify-around md:justify-start items-center md:items-stretch pb-[safe-area-inset-bottom]`}
     >
       {/* Toggle Button */}
       <button
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute -right-3 top-5 p-1 bg-[#121212] border border-white/10 hover:bg-white/10 rounded-full text-white/50 hover:text-white transition-all z-50 shadow-md"
+        className="hidden md:block absolute -right-3 top-5 p-1 bg-[#121212] border border-white/10 hover:bg-white/10 rounded-full text-white/50 hover:text-white transition-all z-50 shadow-md"
         title={isCollapsed ? "Expand Menu" : "Collapse Menu"}
       >
         {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
       </button>
 
       {/* Top Header */}
-      <div className="flex items-center h-16 px-4 border-b border-white/10 overflow-hidden flex-shrink-0">
-        {/* Icon on Top Left (Now a link to Home) */}
+      <div className="hidden md:flex items-center h-16 px-4 border-b border-white/10 overflow-hidden flex-shrink-0">
         <Link href="/home" className="flex items-center text-purple-400 hover:text-purple-300 transition-colors">
           <LayoutDashboard className="w-8 h-8 flex-shrink-0" />
           {!isCollapsed && <span className="ml-3 font-bold text-lg text-white whitespace-nowrap">My App</span>}
         </Link>
       </div>
 
-      {/* Import PDF Button */}
-      <div className="flex justify-center py-4 border-b border-white/10 flex-shrink-0">
-        <input 
-          type="file" 
-          accept="application/epub+zip, .epub"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-          className="hidden"
-        />
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          className={`rounded-full bg-white/5 hover:bg-white/10 border border-white/20 flex items-center justify-center transition-all group ${
-            isCollapsed ? 'w-10 h-10' : 'w-12 h-12'
-          }`}
-          title="Import EPUB"
-        >
-          <Plus className={`${isCollapsed ? 'w-5 h-5' : 'w-6 h-6'} text-white/70 group-hover:text-white transition-colors`} />
-        </button>
-      </div>
-
-      {/* Navigation Links */}
-      <nav className="flex-1 overflow-y-auto py-4">
+      {/* Navigation Links and Mobile Actions */}
+      <nav className="flex flex-row md:flex-col flex-1 md:overflow-y-auto md:py-4 justify-around md:justify-start items-center md:items-stretch px-1 md:px-0 w-full md:w-auto h-full md:h-auto">
         {links.length > 0 && (
-          <ul className="space-y-2 px-3">
+          <ul className="flex flex-row md:flex-col w-full md:w-auto justify-around md:justify-start md:space-y-2 px-1 md:px-3">
             {links.map((link) => {
               const isActive = pathname === link.path
               return (
-                <li key={link.href}>
+                <li key={link.href} className="flex-1 md:flex-none flex justify-center md:block">
                   <Link
                     href={link.href}
                     onClick={(e) => {
@@ -227,27 +206,76 @@ export function Sidebar() {
                         e.preventDefault()
                       }
                     }}
-                    className={`flex items-center px-3 py-2.5 rounded-xl transition-all duration-200 group ${
+                    className={`flex flex-col md:flex-row items-center justify-center md:justify-start px-2 md:px-3 py-1.5 md:py-2.5 rounded-xl transition-all duration-200 group w-full md:w-auto ${
                       isActive
-                        ? 'bg-purple-500/20 text-purple-300'
-                        : 'text-white/60 hover:bg-white/10 hover:text-white'
+                        ? 'text-purple-300 md:bg-purple-500/20'
+                        : 'text-white/60 hover:text-white md:hover:bg-white/10'
                     }`}
                     title={isCollapsed ? link.label : undefined}
                   >
-                    <link.icon className={`w-5 h-5 flex-shrink-0 ${isCollapsed ? 'mx-auto' : ''}`} />
+                    <link.icon className={`w-6 h-6 md:w-5 md:h-5 flex-shrink-0 mb-1 md:mb-0 ${isCollapsed ? 'md:mx-auto' : ''}`} />
                     {!isCollapsed && (
-                      <span className="ml-3 font-medium">{link.label}</span>
+                      <span className="hidden md:block ml-3 font-medium">{link.label}</span>
                     )}
+                    <span className="text-[10px] font-medium md:hidden">{link.label}</span>
                   </Link>
                 </li>
               )
             })}
+
+            {/* Import PDF Button (Mobile inside list) */}
+            <li className="flex md:hidden flex-1 justify-center items-center">
+              <input 
+                type="file" 
+                accept="application/epub+zip, .epub"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className="hidden"
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="flex flex-col items-center justify-center group w-full text-white/60 hover:text-white"
+                title="Import EPUB"
+              >
+                <div className="w-8 h-8 rounded-full bg-white/5 border border-white/20 flex items-center justify-center mb-1 group-hover:bg-white/10 transition-colors">
+                  <Plus className="w-5 h-5 text-white/70 group-hover:text-white transition-colors" />
+                </div>
+                <span className="text-[10px] font-medium">Import</span>
+              </button>
+            </li>
+
+            {/* Account Profile (Mobile inside list) */}
+            <li className="flex md:hidden flex-1 justify-center items-center">
+              <Link href="/account" className="flex flex-col items-center justify-center group w-full text-white/60 hover:text-white">
+                <div className="relative w-8 h-8 rounded-full bg-purple-500/30 border border-purple-500/50 flex-shrink-0 overflow-hidden flex items-center justify-center mb-1">
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="w-5 h-5 text-purple-300" />
+                  )}
+                </div>
+                <span className="text-[10px] font-medium">Profile</span>
+              </Link>
+            </li>
           </ul>
         )}
+
+        {/* Import PDF Button (Desktop) */}
+        <div className="hidden md:flex justify-center py-4 border-t border-b border-white/10 flex-shrink-0 mt-4 mb-4">
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className={`rounded-full bg-white/5 hover:bg-white/10 border border-white/20 flex items-center justify-center transition-all group ${
+              isCollapsed ? 'w-10 h-10' : 'w-12 h-12'
+            }`}
+            title="Import EPUB"
+          >
+            <Plus className={`${isCollapsed ? 'w-5 h-5' : 'w-6 h-6'} text-white/70 group-hover:text-white transition-colors`} />
+          </button>
+        </div>
       </nav>
 
-      {/* Account Section at the Bottom */}
-      <div className="p-3 border-t border-white/10">
+      {/* Account Section at the Bottom (Desktop) */}
+      <div className="hidden md:block p-3 border-t border-white/10">
         <Link
           href="/account"
           className="flex items-center w-full p-2 hover:bg-white/10 rounded-xl transition-colors group"

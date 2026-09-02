@@ -31,7 +31,7 @@ export default async function NewHomePage() {
   }
 
   return (
-    <div className="min-h-full w-full flex flex-col items-center p-8 bg-black">
+    <div className="min-h-full w-full flex flex-col items-center p-4 md:p-8 bg-black">
       <ClientBookList initialFiles={epubFiles} initialUrls={signedUrls} />
     </div>
   )

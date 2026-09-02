@@ -13,7 +13,7 @@ export default async function ViewPage(props: {
 
   if (!fileName) {
     return (
-      <div className="h-full w-full flex flex-col items-center justify-center p-8 bg-black">
+      <div className="h-full w-full flex flex-col items-center justify-center p-4 md:p-8 bg-black">
         <div className="w-full max-w-2xl border border-white/20 p-10 rounded-2xl bg-white/5 backdrop-blur-md flex flex-col items-center text-center">
           <BookOpen className="w-12 h-12 text-white/40 mb-4" />
           <h1 className="text-3xl font-bold text-white mb-4">No Book Selected</h1>
@@ -44,7 +44,7 @@ export default async function ViewPage(props: {
 
   if (error || !signedUrlData) {
     return (
-      <div className="min-h-full w-full flex flex-col items-center justify-center p-8 bg-black">
+      <div className="min-h-full w-full flex flex-col items-center justify-center p-4 md:p-8 bg-black">
         <div className="w-full max-w-2xl border border-white/20 p-10 rounded-2xl bg-white/5 backdrop-blur-md flex flex-col items-center text-center">
           <h1 className="text-3xl font-bold text-white mb-4">Error Loading EPUB</h1>
           <p className="text-white/60 mb-8">
@@ -62,7 +62,7 @@ export default async function ViewPage(props: {
   }
 
   return (
-    <div className="h-full w-full flex flex-col p-6 bg-black overflow-hidden">
+    <div className="h-full w-full flex flex-col p-2 sm:p-6 bg-black overflow-hidden">
       <ResizableViewerWrapper fileName={fileName}>
         <div className="flex flex-col w-full h-full">
           <h1 className="text-2xl font-bold text-white truncate w-full mb-4 px-2 tracking-tight">
