@@ -76,22 +76,22 @@ export default function EpubViewerClient({ url, fileName }: { url: string, fileN
             if (!text.trim()) return
 
             const range = selection.getRangeAt(0)
-            const rect = range.getBoundingClientRect()
+            const clientRects = range.getClientRects()
+            if (clientRects.length === 0) return
             
-            // The rect is relative to the iframe. We need the iframe's offset relative to the viewport.
+            // Get the EXACT starting rectangle (first line/word) of the selection
+            const firstRect = clientRects[0]
+            
             const iframe = contents.document.defaultView?.frameElement
             const iframeRect = iframe ? iframe.getBoundingClientRect() : { left: 0, top: 0 }
-            
-            // To make it relative to the parent container (which is `relative`), 
-            // we subtract the container's own getBoundingClientRect offset.
             const containerRect = viewerRef.current?.getBoundingClientRect() || { left: 0, top: 0 }
             
-            const absoluteLeft = rect.left + iframeRect.left - containerRect.left
-            const absoluteBottom = rect.bottom + iframeRect.top - containerRect.top
+            const absoluteLeft = firstRect.left + iframeRect.left - containerRect.left
+            const absoluteTop = firstRect.top + iframeRect.top - containerRect.top
             
             setTooltip({
-              x: absoluteLeft + (rect.width / 2),
-              y: absoluteBottom + 5, // slightly below the text
+              x: absoluteLeft, // starting point of the selection
+              y: absoluteTop, // above the starting point
               text: text.trim()
             })
           } catch (e) {
@@ -162,7 +162,7 @@ export default function EpubViewerClient({ url, fileName }: { url: string, fileN
         {/* Ask AI Tooltip Overlay */}
         {tooltip && !errorMsg && (
           <div 
-            className="absolute z-50 -translate-x-1/2 pt-2 pointer-events-auto shadow-2xl"
+            className="absolute z-50 -translate-y-full pb-2 pointer-events-auto shadow-2xl"
             style={{ left: tooltip.x, top: tooltip.y }}
           >
             <button 
