@@ -11,7 +11,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { apiKey, model, messages, conversationId, bookTitle } = await req.json()
+    const { apiKey, model, provider, messages, conversationId, bookTitle } = await req.json()
     
     if (!apiKey || !model || !messages || messages.length === 0) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -50,28 +50,59 @@ export async function POST(req: Request) {
 
     if (userMsgError) throw new Error('Failed to save user message')
 
-    // Prepare Google GenAI request
-    const ai = new GoogleGenAI({ apiKey })
-    
-    // Map existing messages correctly for Google GenAI ('user' and 'model' roles)
-    // We expect the frontend to pass the full history up to the latest user message
-    const contents = messages.map((m: any) => ({
-      role: m.role === 'assistant' ? 'model' : m.role,
-      parts: [{ text: m.content }]
-    }))
+    let aiText = ''
 
-    // Generate AI response
-    const response = await ai.models.generateContent({
-      model: model,
-      contents: contents,
-      config: {
-        systemInstruction: bookTitle 
-          ? `You are an intelligent reading assistant. The user is currently reading a book titled "${bookTitle}". Answer questions, provide context, and fact-check based on the context of this book.` 
-          : undefined
+    if (provider === 'openrouter') {
+      const systemInstruction = bookTitle 
+        ? `You are an intelligent reading assistant. The user is currently reading a book titled "${bookTitle}". Answer questions, provide context, and fact-check based on the context of this book.` 
+        : ''
+      
+      const openRouterMessages = systemInstruction 
+        ? [{ role: 'system', content: systemInstruction }, ...messages]
+        : messages
+
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: openRouterMessages
+        })
+      })
+
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data.error?.message || 'OpenRouter API Error')
       }
-    })
+      aiText = data.choices?.[0]?.message?.content || 'I could not generate a response.'
+      
+    } else {
+      // Prepare Google GenAI request
+      const ai = new GoogleGenAI({ apiKey })
+      
+      // Map existing messages correctly for Google GenAI ('user' and 'model' roles)
+      // We expect the frontend to pass the full history up to the latest user message
+      const contents = messages.map((m: any) => ({
+        role: m.role === 'assistant' ? 'model' : m.role,
+        parts: [{ text: m.content }]
+      }))
 
-    const aiText = response.text || 'I could not generate a response.'
+      // Generate AI response
+      const response = await ai.models.generateContent({
+        model: model,
+        contents: contents,
+        config: {
+          systemInstruction: bookTitle 
+            ? `You are an intelligent reading assistant. The user is currently reading a book titled "${bookTitle}". Answer questions, provide context, and fact-check based on the context of this book.` 
+            : undefined
+        }
+      })
+
+      aiText = response.text || 'I could not generate a response.'
+    }
 
     // Insert AI message into database
     const { error: aiMsgError } = await supabase

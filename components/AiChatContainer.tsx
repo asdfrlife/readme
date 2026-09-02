@@ -112,7 +112,10 @@ export function AiChatContainer({ bookTitle }: { bookTitle?: string }) {
     
     if (!finalMessage || models.length === 0 || isGenerating) return
 
-    const apiKey = models.find(m => m.id === selectedModel)?.key
+    const selectedModelObj = models.find(m => m.id === selectedModel)
+    const apiKey = selectedModelObj?.key
+    const provider = selectedModelObj?.provider || 'google'
+    
     if (!apiKey) {
       alert("No API key found for this model.")
       return
@@ -131,6 +134,7 @@ export function AiChatContainer({ bookTitle }: { bookTitle?: string }) {
         body: JSON.stringify({
           apiKey,
           model: selectedModel,
+          provider,
           messages: newMessages,
           conversationId,
           bookTitle
