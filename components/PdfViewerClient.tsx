@@ -18,7 +18,7 @@ function VirtualizedPage({ pageNumber, width }: { pageNumber: number, width: num
   })
   
   // A4 paper aspect ratio is roughly 1:1.414
-  const scale = 0.85
+  const scale = typeof window !== 'undefined' && window.innerWidth < 768 ? 0.95 : 0.85
   const scaledWidth = width * scale
   const estimatedHeight = scaledWidth * 1.414
 
