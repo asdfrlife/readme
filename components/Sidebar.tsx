@@ -17,6 +17,7 @@ import {
   Menu,
   PenLine
 } from 'lucide-react'
+import { cleanFileName } from '@/utils/bookFormat'
 
 export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false)
@@ -68,6 +69,7 @@ export function Sidebar() {
   const [isUploading, setIsUploading] = useState(false)
   const [pendingUploadFile, setPendingUploadFile] = useState<File | null>(null)
   const [customCategory, setCustomCategory] = useState('')
+  const [customTitle, setCustomTitle] = useState('')
   const [uploadProgress, setUploadProgress] = useState(0)
   const [uploadUser, setUploadUser] = useState<{ id: string } | null>(null)
 
@@ -128,6 +130,7 @@ export function Sidebar() {
     const file = e.target.files?.[0]
     if (!file || !uploadUser) return
     setPendingUploadFile(file)
+    setCustomTitle(cleanFileName(file.name))
   }
 
   const performUpload = async (category: string) => {
@@ -147,9 +150,16 @@ export function Sidebar() {
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
       const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-      // Encode category in filename: [timestamp]___[category]___[filename]
+      // Extract extension from original file
+      const extension = file.name.includes('.') ? file.name.substring(file.name.lastIndexOf('.')) : '';
+      
+      // Encode category and title in filename: [timestamp]___[category]___[title.ext]
       const safeCategory = category.trim() || 'Uncategorized'
-      const filePath = `${uploadUser.id}/${Date.now()}___${safeCategory}___${file.name}`
+      const finalTitle = customTitle.trim() || file.name
+      // Ensure the title still has the correct extension for the viewer to parse
+      const titleWithExt = finalTitle.endsWith(extension) ? finalTitle : `${finalTitle}${extension}`;
+      
+      const filePath = `${uploadUser.id}/${Date.now()}___${safeCategory}___${titleWithExt}`
       const url = `${supabaseUrl}/storage/v1/object/files/${filePath}`
 
       const xhr = new XMLHttpRequest()
@@ -415,9 +425,21 @@ export function Sidebar() {
       {pendingUploadFile && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div className="bg-[#1a1a1a] border border-white/10 p-8 rounded-2xl flex flex-col max-w-md w-full mx-4 shadow-2xl">
-            <h2 className="text-xl font-bold text-white mb-2">Select a Category</h2>
-            <p className="text-white/60 text-sm mb-6">Choose a category for "{pendingUploadFile.name}"</p>
+            <h2 className="text-xl font-bold text-white mb-2">Import Book</h2>
+            <p className="text-white/60 text-sm mb-6">Review the title and select a category for this book.</p>
             
+            <div className="flex flex-col gap-2 mb-6">
+              <label className="text-sm text-white/80 font-medium">Book Title</label>
+              <input 
+                type="text" 
+                value={customTitle}
+                onChange={e => setCustomTitle(e.target.value)}
+                placeholder="Enter book title"
+                className="w-full bg-black border border-white/20 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-purple-500"
+              />
+            </div>
+            
+            <label className="text-sm text-white/80 font-medium mb-2">Select a Category</label>
             <div className="flex flex-wrap gap-2 mb-6">
               {['Fiction', 'Non-Fiction', 'Sci-Fi', 'Biography', 'Fantasy', 'Romance', 'Self-Help'].map(cat => (
                 <button
