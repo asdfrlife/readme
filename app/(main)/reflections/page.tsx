@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { getReflections, deleteReflection, type Reflection } from '@/utils/reflections'
 import { BookOpen, PenLine, Trash2 } from 'lucide-react'
+import { parseBookFilename } from '@/utils/bookFormat'
 
 export default function ReflectionsPage() {
   const [reflections, setReflections] = useState<Reflection[]>([])
@@ -44,12 +45,14 @@ export default function ReflectionsPage() {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {reflections.map((ref) => (
+          {reflections.map((ref) => {
+            const { displayName } = parseBookFilename(ref.bookname)
+            return (
             <div key={ref.id} className="bg-[#121212] border border-white/20 rounded-2xl p-6 flex flex-col shadow-sm hover:border-purple-500/50 hover:shadow-purple-500/10 transition-all group">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-2 text-white/80">
                   <BookOpen className="w-4 h-4 text-purple-400" />
-                  <span className="font-semibold text-lg">{ref.bookname}</span>
+                  <span className="font-semibold text-lg">{displayName}</span>
                 </div>
                 <button 
                   onClick={() => handleDelete(ref.id)}
@@ -74,7 +77,7 @@ export default function ReflectionsPage() {
                 {new Date(ref.created_at).toLocaleDateString()} at {new Date(ref.created_at).toLocaleTimeString()}
               </div>
             </div>
-          ))}
+          )})}
         </div>
       </div>
     </div>

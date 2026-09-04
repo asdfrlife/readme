@@ -5,6 +5,7 @@ import { BookOpen } from 'lucide-react'
 import { EpubViewer } from '@/components/EpubViewer'
 import { PdfViewer } from '@/components/PdfViewer'
 import { ResizableViewerWrapper } from '@/components/ResizableViewerWrapper'
+import { parseBookFilename } from '@/utils/bookFormat'
 import { ReadingTimer } from '@/components/ReadingTimer'
 
 export default async function ViewPage({ searchParams }: Readonly<{ searchParams: Promise<{ file?: string }> }>) {
@@ -46,7 +47,7 @@ export default async function ViewPage({ searchParams }: Readonly<{ searchParams
     return (
       <div className="min-h-full w-full flex flex-col items-center justify-center p-4 md:p-8 bg-black">
         <div className="w-full max-w-2xl border border-white/20 p-10 rounded-2xl bg-white/5 backdrop-blur-md flex flex-col items-center text-center">
-          <h1 className="text-3xl font-bold text-white mb-4">Error Loading EPUB</h1>
+          <h1 className="text-3xl font-bold text-white mb-4">Error Loading Book</h1>
           <p className="text-white/60 mb-8">
             Could not retrieve the file. It may have been deleted or the link expired.
           </p>
@@ -61,13 +62,15 @@ export default async function ViewPage({ searchParams }: Readonly<{ searchParams
     )
   }
 
+  const { displayName } = parseBookFilename(fileName)
+
   return (
     <div className="h-full w-full flex flex-col p-2 sm:p-6 bg-black overflow-hidden">
       <ResizableViewerWrapper fileName={fileName}>
         <div className="flex flex-col w-full h-full">
           <div className="flex items-center justify-between mb-4 px-2">
             <h1 className="text-2xl font-bold text-white truncate tracking-tight">
-              {fileName.replace(/^\d+_/, '')}
+              {displayName}
             </h1>
             <ReadingTimer />
           </div>

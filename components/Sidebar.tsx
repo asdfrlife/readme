@@ -66,6 +66,8 @@ export function Sidebar() {
   // PDF Upload State
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isUploading, setIsUploading] = useState(false)
+  const [pendingUploadFile, setPendingUploadFile] = useState<File | null>(null)
+  const [customCategory, setCustomCategory] = useState('')
   const [uploadProgress, setUploadProgress] = useState(0)
   const [uploadUser, setUploadUser] = useState<{ id: string } | null>(null)
 
@@ -122,9 +124,16 @@ export function Sidebar() {
     return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file || !uploadUser) return
+    setPendingUploadFile(file)
+  }
+
+  const performUpload = async (category: string) => {
+    if (!pendingUploadFile || !uploadUser) return
+    const file = pendingUploadFile
+    setPendingUploadFile(null)
 
     setIsUploading(true)
     setUploadProgress(0)
@@ -138,7 +147,9 @@ export function Sidebar() {
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
       const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-      const filePath = `${uploadUser.id}/${Date.now()}_${file.name}`
+      // Encode category in filename: [timestamp]___[category]___[filename]
+      const safeCategory = category.trim() || 'Uncategorized'
+      const filePath = `${uploadUser.id}/${Date.now()}___${safeCategory}___${file.name}`
       const url = `${supabaseUrl}/storage/v1/object/files/${filePath}`
 
       const xhr = new XMLHttpRequest()
@@ -396,6 +407,58 @@ export function Sidebar() {
               <span>{formatBytes(uploadBytes)} / {formatBytes(totalBytes)}</span>
               <span>{uploadProgress}%</span>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Category Selection Modal */}
+      {pendingUploadFile && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-[#1a1a1a] border border-white/10 p-8 rounded-2xl flex flex-col max-w-md w-full mx-4 shadow-2xl">
+            <h2 className="text-xl font-bold text-white mb-2">Select a Category</h2>
+            <p className="text-white/60 text-sm mb-6">Choose a category for "{pendingUploadFile.name}"</p>
+            
+            <div className="flex flex-wrap gap-2 mb-6">
+              {['Fiction', 'Non-Fiction', 'Sci-Fi', 'Biography', 'Fantasy', 'Romance', 'Self-Help'].map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => performUpload(cat)}
+                  className="px-4 py-2 rounded-xl border border-white/20 hover:border-purple-500 hover:bg-purple-500/20 text-white text-sm transition-all"
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-sm text-white/80 font-medium">Or enter a custom category:</label>
+              <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  value={customCategory}
+                  onChange={e => setCustomCategory(e.target.value)}
+                  placeholder="e.g. Cookbooks"
+                  className="flex-1 bg-black border border-white/20 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-purple-500"
+                />
+                <button
+                  onClick={() => performUpload(customCategory)}
+                  disabled={!customCategory.trim()}
+                  className="px-4 py-2 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white rounded-xl font-medium transition-colors"
+                >
+                  Upload
+                </button>
+              </div>
+            </div>
+            
+            <button 
+              onClick={() => {
+                setPendingUploadFile(null)
+                if (fileInputRef.current) fileInputRef.current.value = ''
+              }}
+              className="mt-6 text-white/50 hover:text-white transition-colors text-sm self-center"
+            >
+              Cancel
+            </button>
           </div>
         </div>
       )}

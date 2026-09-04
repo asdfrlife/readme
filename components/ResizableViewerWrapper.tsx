@@ -4,6 +4,8 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 
 import { AiChatContainer } from './AiChatContainer'
 
+import { parseBookFilename } from '@/utils/bookFormat'
+
 export function ResizableViewerWrapper({ children, fileName }: Readonly<{ children: React.ReactNode, fileName: string }>) {
   // A4 paper proportion minimum (approx 700px for typical screens)
   const [width, setWidth] = useState(700)
@@ -59,6 +61,8 @@ export function ResizableViewerWrapper({ children, fileName }: Readonly<{ childr
     }
   }, [])
 
+  const { displayName } = parseBookFilename(fileName)
+
   return (
     <div className="flex-1 w-full overflow-y-auto lg:overflow-hidden flex flex-col-reverse lg:flex-row relative gap-6 pb-6 lg:pb-0">
       <style>{`
@@ -70,7 +74,7 @@ export function ResizableViewerWrapper({ children, fileName }: Readonly<{ childr
 
       {/* Left AI Chat Panel */}
       <div className="w-full lg:flex-1 h-[500px] lg:h-full lg:min-w-[300px] overflow-hidden flex-shrink-0">
-        <AiChatContainer bookTitle={fileName.replace(/^\d+_/, '')} />
+        <AiChatContainer bookTitle={displayName} />
       </div>
 
       {/* Right Resizable Canvas */}
