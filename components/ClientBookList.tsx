@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { FileText } from 'lucide-react'
 import { EpubThumbnail } from '@/components/EpubThumbnail'
 import { DeleteBookButton } from '@/components/DeleteBookButton'
@@ -72,8 +73,8 @@ export function ClientBookList({
           className="relative w-full h-auto sm:h-[252px] border border-white/20 rounded-2xl bg-[#121212] flex flex-col sm:flex-row shadow-sm hover:border-purple-500/50 hover:shadow-purple-500/10 transition-all overflow-hidden group cursor-pointer"
         >
           {file.name.toLowerCase().endsWith('.pdf') ? (
-            <div className="w-full sm:w-[180px] h-[252px] bg-white/5 flex items-center justify-center border-r border-white/10 flex-shrink-0">
-              <FileText className="w-16 h-16 text-red-400 opacity-50" />
+            <div className="w-full h-[200px] sm:w-[133px] sm:h-[252px] bg-white/5 flex items-center justify-center border-b sm:border-b-0 sm:border-r border-white/10 flex-shrink-0 relative overflow-hidden">
+              <Image src="/pdf-icon.png" alt="PDF" fill sizes="133px" className="object-cover p-8" />
             </div>
           ) : (
             <EpubThumbnail url={urls[file.name] || ''} />
