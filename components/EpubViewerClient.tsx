@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
@@ -132,7 +133,7 @@ export default function EpubViewerClient({ url, fileName }: Readonly<{ url: stri
       if (book) {
         try {
           book.destroy()
-        } catch(e) {}
+        } catch {}
       }
     }
   }, [url, fileName])

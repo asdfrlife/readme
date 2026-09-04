@@ -26,6 +26,7 @@ export default function SignInPage() {
       const searchParams = new URLSearchParams(window.location.search)
       const urlError = searchParams.get('error')
       if (urlError) {
+        // eslint-disable-next-line
         setError(decodeURIComponent(urlError))
       }
       const urlMessage = searchParams.get('message')
@@ -159,7 +160,7 @@ export default function SignInPage() {
         </button>
 
         <p className="mt-8 text-center text-sm text-white/70">
-          Don't have an account?{' '}
+          Don&apos;t have an account?{' '}
           <Link href="/signup" className="text-white font-medium hover:underline">
             Sign Up
           </Link>

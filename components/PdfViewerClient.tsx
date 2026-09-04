@@ -48,7 +48,7 @@ const VirtualizedPage = React.memo(function VirtualizedPage({ pageNumber, width 
   )
 })
 
-export default function PdfViewerClient({ url, fileName }: Readonly<{ url: string, fileName: string }>) {
+export default function PdfViewerClient({ url }: Readonly<{ url: string, fileName: string }>) {
   const [numPages, setNumPages] = useState<number>(0)
   const [tooltip, setTooltip] = useState<{ x: number, y: number, text: string, isMobile?: boolean } | null>(null)
   

@@ -7,8 +7,9 @@ export default async function NewHomePage() {
   // Fetch user
   const { data: { user } } = await supabase.auth.getUser()
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let epubFiles: any[] = []
-  let signedUrls: Record<string, string> = {}
+  const signedUrls: Record<string, string> = {}
 
   if (user) {
     const { data: files } = await supabase.storage

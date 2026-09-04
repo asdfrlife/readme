@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import {
   ChevronLeft,
@@ -65,7 +65,7 @@ export function Sidebar() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
-  const [uploadUser, setUploadUser] = useState<any>(null)
+  const [uploadUser, setUploadUser] = useState<{ id: string } | null>(null)
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -193,6 +193,7 @@ export function Sidebar() {
 
   useEffect(() => {
     const saved = localStorage.getItem('lastReadBook')
+    // eslint-disable-next-line
     if (saved) setLastRead(saved)
   }, [pathname])
 

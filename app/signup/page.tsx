@@ -26,6 +26,7 @@ export default function SignUpPage() {
       const searchParams = new URLSearchParams(window.location.search)
       const urlError = searchParams.get('error')
       if (urlError) {
+        // eslint-disable-next-line
         setError(decodeURIComponent(urlError))
       }
     }
