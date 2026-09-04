@@ -13,7 +13,8 @@ import {
   Plus,
   BookOpen,
   Key,
-  Menu
+  Menu,
+  PenLine
 } from 'lucide-react'
 
 export function Sidebar() {
@@ -199,6 +200,7 @@ export function Sidebar() {
 
   const links = [
     { href: '/home', path: '/home', label: 'Home', icon: Home },
+    { href: '/reflections', path: '/reflections', label: 'Reflections', icon: PenLine },
     { href: '/api-key', path: '/api-key', label: 'API Key', icon: Key },
     { href: lastRead ? `/view?file=${encodeURIComponent(lastRead)}` : '/view', path: '/view', label: 'Reading', icon: BookOpen }
   ]

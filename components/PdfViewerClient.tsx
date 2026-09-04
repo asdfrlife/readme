@@ -2,7 +2,8 @@
 
 import React, { useState, useRef, useEffect } from 'react'
 import { Document, Page, pdfjs } from 'react-pdf'
-import { Bot } from 'lucide-react'
+import { Bot, PenLine } from 'lucide-react'
+import { ReflectionModal } from './ReflectionModal'
 import { useInView } from 'react-intersection-observer'
 
 import 'react-pdf/dist/Page/AnnotationLayer.css'
@@ -48,9 +49,10 @@ const VirtualizedPage = React.memo(function VirtualizedPage({ pageNumber, width 
   )
 })
 
-export default function PdfViewerClient({ url }: Readonly<{ url: string, fileName: string }>) {
+export default function PdfViewerClient({ url, fileName }: Readonly<{ url: string, fileName: string }>) {
   const [numPages, setNumPages] = useState<number>(0)
   const [tooltip, setTooltip] = useState<{ x: number, y: number, text: string, isMobile?: boolean } | null>(null)
+  const [isReflectionModalOpen, setIsReflectionModalOpen] = useState(false)
   
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -150,7 +152,7 @@ export default function PdfViewerClient({ url }: Readonly<{ url: string, fileNam
         {/* Ask AI Tooltip Overlay */}
         {tooltip && (
           <div 
-            className={`absolute z-50 pointer-events-auto shadow-2xl ${
+            className={`absolute z-50 pointer-events-auto flex items-center gap-2 shadow-2xl ${
               tooltip.isMobile ? 'mt-2 ml-2' : '-translate-y-full pb-1'
             }`}
             style={{ left: tooltip.x, top: tooltip.y }}
@@ -165,8 +167,24 @@ export default function PdfViewerClient({ url }: Readonly<{ url: string, fileNam
               <Bot className="w-4 h-4 text-purple-400" />
               <span className="font-semibold tracking-wide text-xs">Ask AI</span>
             </button>
+            <button 
+              onClick={() => setIsReflectionModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-2 bg-[#121212] hover:bg-[#1a1a1a] text-white text-sm rounded-lg border border-purple-500/50 transition-all hover:scale-105 active:scale-95 shadow-xl"
+            >
+              <PenLine className="w-4 h-4 text-purple-400" />
+              <span className="font-semibold tracking-wide text-xs">Reflection</span>
+            </button>
           </div>
         )}
+        <ReflectionModal 
+          isOpen={isReflectionModalOpen} 
+          onClose={() => {
+            setIsReflectionModalOpen(false)
+            setTooltip(null)
+          }} 
+          bookName={fileName} 
+          quote={tooltip?.text || ''} 
+        />
       </div>
 
 

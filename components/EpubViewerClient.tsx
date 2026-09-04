@@ -3,7 +3,8 @@
 
 import { useEffect, useRef, useState } from 'react'
 import ePub from 'epubjs'
-import { ChevronLeft, ChevronRight, Bot } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Bot, PenLine } from 'lucide-react'
+import { ReflectionModal } from './ReflectionModal'
 
 export default function EpubViewerClient({ url, fileName }: Readonly<{ url: string, fileName: string }>) {
   const viewerRef = useRef<HTMLDivElement>(null)
@@ -11,6 +12,7 @@ export default function EpubViewerClient({ url, fileName }: Readonly<{ url: stri
   const [atStart, setAtStart] = useState(true)
   const [atEnd, setAtEnd] = useState(false)
   const [tooltip, setTooltip] = useState<{ x: number, y: number, text: string } | null>(null)
+  const [isReflectionModalOpen, setIsReflectionModalOpen] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   useEffect(() => {
@@ -163,7 +165,7 @@ export default function EpubViewerClient({ url, fileName }: Readonly<{ url: stri
         {/* Ask AI Tooltip Overlay */}
         {tooltip && !errorMsg && (
           <div 
-            className="absolute z-50 -translate-y-full pb-1 pointer-events-auto shadow-2xl"
+            className="absolute z-50 -translate-y-full pb-1 pointer-events-auto flex items-center gap-2 shadow-2xl"
             style={{ left: tooltip.x, top: tooltip.y }}
           >
             <button 
@@ -176,8 +178,24 @@ export default function EpubViewerClient({ url, fileName }: Readonly<{ url: stri
               <Bot className="w-4 h-4 text-purple-400" />
               <span className="font-semibold tracking-wide text-xs">Ask AI</span>
             </button>
+            <button 
+              onClick={() => setIsReflectionModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-2 bg-[#121212] hover:bg-[#1a1a1a] text-white text-sm rounded-lg border border-purple-500/50 transition-all hover:scale-105 active:scale-95 shadow-xl"
+            >
+              <PenLine className="w-4 h-4 text-purple-400" />
+              <span className="font-semibold tracking-wide text-xs">Reflection</span>
+            </button>
           </div>
         )}
+        <ReflectionModal 
+          isOpen={isReflectionModalOpen} 
+          onClose={() => {
+            setIsReflectionModalOpen(false)
+            setTooltip(null)
+          }} 
+          bookName={fileName} 
+          quote={tooltip?.text || ''} 
+        />
       </div>
       
       {/* Navigation Overlays */}

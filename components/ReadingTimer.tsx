@@ -15,6 +15,8 @@ export function ReadingTimer() {
         setTimeLeft((prev) => (prev !== null ? prev - 1 : 0))
       }, 1000)
     } else if (timeLeft === 0 && isRunning) {
+      // False positive: we must synchronously reset isRunning when timer hits 0
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsRunning(false)
       // We use setTimeout to allow state to settle before alert blocks the thread
       setTimeout(() => alert("Time's up! Great reading session."), 10)
