@@ -1,11 +1,12 @@
 import { createClient } from '@/utils/supabase/client'
 
 export interface Reflection {
-  id: string // This stores the user ID in the database
+  id: string
   bookname: string
   quote: string
   reflection: string
   created_at: string
+  user_id: string
 }
 
 export async function saveReflection(reflection: { bookname: string, quote: string, reflection: string }): Promise<Reflection | null> {
@@ -18,7 +19,7 @@ export async function saveReflection(reflection: { bookname: string, quote: stri
     .from('reflection')
     .insert([{
       ...reflection,
-      id: user.id
+      user_id: user.id
     }])
     .select()
     .single()
@@ -40,7 +41,7 @@ export async function getReflections(): Promise<Reflection[]> {
   const { data, error } = await supabase
     .from('reflection')
     .select('*')
-    .eq('id', user.id)
+    .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -51,7 +52,7 @@ export async function getReflections(): Promise<Reflection[]> {
   return data || []
 }
 
-export async function deleteReflection(createdAt: string): Promise<void> {
+export async function deleteReflection(id: string): Promise<void> {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -60,10 +61,11 @@ export async function deleteReflection(createdAt: string): Promise<void> {
   const { error } = await supabase
     .from('reflection')
     .delete()
-    .eq('id', user.id) // Ensure we only delete for the current user
-    .eq('created_at', createdAt)
+    .eq('id', id)
+    .eq('user_id', user.id) // Ensure we only delete for the current user
 
   if (error) {
     console.error('Error deleting reflection:', error)
   }
 }
+
