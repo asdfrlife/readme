@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { createClient } from '@/utils/supabase/client'
 
 export default function HomePage() {
@@ -99,7 +100,7 @@ export default function HomePage() {
           <>
             <div className="relative w-32 h-32 rounded-full border-4 border-white/20 overflow-hidden mb-6 shadow-2xl">
               {avatarUrl ? (
-                <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+                <Image src={avatarUrl} alt="" fill sizes="128px" className="object-cover" />
               ) : (
                 <div className="w-full h-full bg-white/10 flex items-center justify-center text-white/50 text-sm">
                   No Image

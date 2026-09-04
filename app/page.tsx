@@ -2,6 +2,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { createClient } from '@/utils/supabase/client'
 import { UploadCloud, CheckCircle2, AlertCircle } from 'lucide-react'
 
@@ -69,7 +70,7 @@ export default function HomePage() {
             >
               {previewUrl ? (
                 <div className="relative w-full h-full">
-                  <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                  <Image src={previewUrl} alt="Preview" fill sizes="400px" className="object-cover" unoptimized />
                   <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <p className="text-white font-semibold">Change Image</p>
                   </div>

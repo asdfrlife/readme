@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { createClient } from '@/utils/supabase/client'
 import { Plus } from 'lucide-react'
 
@@ -154,7 +155,7 @@ export default function ProfilePage() {
               className="relative flex items-center justify-center w-32 h-32 rounded-full border-2 border-dashed border-white/40 cursor-pointer overflow-hidden hover:border-white transition-colors bg-white/5"
             >
               {previewUrl ? (
-                <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                <Image src={previewUrl} alt="Preview" fill sizes="128px" className="object-cover" unoptimized />
               ) : (
                 <Plus className="w-8 h-8 text-white/60" />
               )}

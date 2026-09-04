@@ -10,62 +10,77 @@ export interface Reflection {
 }
 
 export async function saveReflection(reflection: { bookname: string, quote: string, reflection: string }): Promise<Reflection | null> {
-  const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  
-  if (!user) return null
+  try {
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) return null
 
-  const { data, error } = await supabase
-    .from('reflection')
-    .insert([{
-      ...reflection,
-      user_id: user.id
-    }])
-    .select()
-    .single()
+    const { data, error } = await supabase
+      .from('reflection')
+      .insert([{
+        ...reflection,
+        user_id: user.id
+      }])
+      .select()
+      .single()
 
-  if (error) {
-    console.error('Error saving reflection:', error)
+    if (error) {
+      console.error('Error saving reflection:', error)
+      return null
+    }
+
+    return data
+  } catch (err) {
+    console.error('Unexpected error saving reflection:', err)
     return null
   }
-
-  return data
 }
 
 export async function getReflections(): Promise<Reflection[]> {
-  const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  
-  if (!user) return []
+  try {
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) return []
 
-  const { data, error } = await supabase
-    .from('reflection')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
+    const { data, error } = await supabase
+      .from('reflection')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
 
-  if (error) {
-    console.error('Error fetching reflections:', error)
+    if (error) {
+      console.error('Error fetching reflections:', error)
+      return []
+    }
+
+    return data || []
+  } catch (err) {
+    console.error('Unexpected error fetching reflections:', err)
     return []
   }
-
-  return data || []
 }
 
 export async function deleteReflection(id: string): Promise<void> {
-  const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  try {
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) return
+    if (!user) return
 
-  const { error } = await supabase
-    .from('reflection')
-    .delete()
-    .eq('id', id)
-    .eq('user_id', user.id) // Ensure we only delete for the current user
+    const { error } = await supabase
+      .from('reflection')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', user.id) // Ensure we only delete for the current user
 
-  if (error) {
-    console.error('Error deleting reflection:', error)
+    if (error) {
+      console.error('Error deleting reflection:', error)
+    }
+  } catch (err) {
+    console.error('Unexpected error deleting reflection:', err)
   }
 }
+
 
