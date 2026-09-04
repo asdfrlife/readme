@@ -16,13 +16,13 @@ export function ReflectionModal({ isOpen, onClose, bookName, quote }: Readonly<R
 
   if (!isOpen) return null
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!reflectionText.trim()) return
     
-    saveReflection({
-      bookName: bookName.replace(/^\d+_/, ''), // Clean timestamp prefix if present
+    await saveReflection({
+      bookname: bookName.replace(/^\d+_/, ''), // Clean timestamp prefix if present
       quote: quote.trim(),
-      reflectionText: reflectionText.trim()
+      reflection: reflectionText.trim()
     })
     
     setReflectionText('')

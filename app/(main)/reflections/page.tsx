@@ -8,14 +8,17 @@ export default function ReflectionsPage() {
   const [reflections, setReflections] = useState<Reflection[]>([])
 
   useEffect(() => {
-    // False positive: we must initialize state from localStorage synchronously on mount
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setReflections(getReflections())
+    const fetchReflections = async () => {
+      const data = await getReflections()
+      setReflections(data)
+    }
+    fetchReflections()
   }, [])
 
-  const handleDelete = (id: string) => {
-    deleteReflection(id)
-    setReflections(getReflections())
+  const handleDelete = async (id: string) => {
+    await deleteReflection(id)
+    const data = await getReflections()
+    setReflections(data)
   }
 
   if (reflections.length === 0) {
@@ -46,7 +49,7 @@ export default function ReflectionsPage() {
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-2 text-white/80">
                   <BookOpen className="w-4 h-4 text-purple-400" />
-                  <span className="font-semibold text-lg">{ref.bookName}</span>
+                  <span className="font-semibold text-lg">{ref.bookname}</span>
                 </div>
                 <button 
                   onClick={() => handleDelete(ref.id)}
@@ -64,11 +67,11 @@ export default function ReflectionsPage() {
               </div>
               
               <div className="flex-1">
-                <p className="text-white/90 whitespace-pre-wrap leading-relaxed">{ref.reflectionText}</p>
+                <p className="text-white/90 whitespace-pre-wrap leading-relaxed">{ref.reflection}</p>
               </div>
               
               <div className="mt-4 pt-4 border-t border-white/10 text-xs text-white/40 font-mono">
-                {new Date(ref.createdAt).toLocaleDateString()} at {new Date(ref.createdAt).toLocaleTimeString()}
+                {new Date(ref.created_at).toLocaleDateString()} at {new Date(ref.created_at).toLocaleTimeString()}
               </div>
             </div>
           ))}
