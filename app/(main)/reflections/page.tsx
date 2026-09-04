@@ -15,8 +15,8 @@ export default function ReflectionsPage() {
     fetchReflections()
   }, [])
 
-  const handleDelete = async (id: string) => {
-    await deleteReflection(id)
+  const handleDelete = async (createdAt: string) => {
+    await deleteReflection(createdAt)
     const data = await getReflections()
     setReflections(data)
   }
@@ -45,14 +45,14 @@ export default function ReflectionsPage() {
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {reflections.map((ref) => (
-            <div key={ref.id} className="bg-[#121212] border border-white/20 rounded-2xl p-6 flex flex-col shadow-sm hover:border-purple-500/50 hover:shadow-purple-500/10 transition-all group">
+            <div key={ref.created_at} className="bg-[#121212] border border-white/20 rounded-2xl p-6 flex flex-col shadow-sm hover:border-purple-500/50 hover:shadow-purple-500/10 transition-all group">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-2 text-white/80">
                   <BookOpen className="w-4 h-4 text-purple-400" />
                   <span className="font-semibold text-lg">{ref.bookname}</span>
                 </div>
                 <button 
-                  onClick={() => handleDelete(ref.id)}
+                  onClick={() => handleDelete(ref.created_at)}
                   className="opacity-0 group-hover:opacity-100 p-2 text-white/40 hover:text-red-400 hover:bg-white/5 rounded-lg transition-all"
                   title="Delete Reflection"
                 >
