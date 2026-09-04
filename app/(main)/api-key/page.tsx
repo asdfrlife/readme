@@ -164,8 +164,8 @@ export default function ApiKeyPage() {
             )}
           </div>
           <div className="flex flex-col gap-2">
-            <label className="text-white font-medium">
-              API Key
+            <label className="text-white font-medium flex flex-col gap-1">
+              <span>API Key</span>
               <input
                 type="password"
                 value={apiKey}
@@ -173,9 +173,7 @@ export default function ApiKeyPage() {
                 placeholder={`Enter your ${provider === 'google' ? 'Google AI Studio' : 'OpenRouter'} API key here...`}
                 className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-purple-500/50 transition-colors"
               />
-
             </label>
-
             {error && (
               <p className="text-red-400 text-sm mt-1 flex items-center gap-1">
                 <AlertCircle className="w-4 h-4" />
@@ -183,7 +181,6 @@ export default function ApiKeyPage() {
               </p>
             )}
           </div>
-
           <button
             onClick={handleConnect}
             disabled={isValidating || !apiKey.trim()}

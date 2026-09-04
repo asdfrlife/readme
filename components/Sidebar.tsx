@@ -79,7 +79,7 @@ export function Sidebar() {
       try {
         const { data: { user }, error: authError } = await supabase.auth.getUser()
         if (authError || !user) return
-        
+
         setUploadUser(user)
 
         const { data: profileData } = await supabase
@@ -95,7 +95,7 @@ export function Sidebar() {
         const { data: files } = await supabase.storage
           .from('ppicture')
           .list(user.id)
-        
+
         if (files && files.length > 0) {
           const profilePic = files.find(f => f.name.startsWith('profile.'))
           if (profilePic) {
@@ -124,7 +124,7 @@ export function Sidebar() {
     const k = 1024
     const sizes = ['B', 'KB', 'MB', 'GB']
     const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+    return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -142,7 +142,7 @@ export function Sidebar() {
 
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
       const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-      
+
       const filePath = `${uploadUser.id}/${Date.now()}_${file.name}`
       const url = `${supabaseUrl}/storage/v1/object/files/${filePath}`
 
@@ -213,7 +213,7 @@ export function Sidebar() {
     <>
       {/* Mobile Floating Button */}
       <div className="md:hidden fixed top-4 left-4 z-[110]">
-        <button 
+        <button
           ref={buttonRef}
           onClick={() => isMobileOpen ? setIsMobileOpen(false) : openMobileMenu()}
           className="w-12 h-12 rounded-full bg-purple-600/90 hover:bg-purple-500 backdrop-blur-md shadow-lg shadow-purple-500/20 flex items-center justify-center text-white border border-white/20 transition-all"
@@ -223,13 +223,12 @@ export function Sidebar() {
       </div>
 
       {/* Mobile Hovering Dropdown Menu */}
-      <div 
+      <div
         ref={menuRef}
-        className={`md:hidden fixed top-20 left-4 z-[100] flex flex-col gap-3 transition-all duration-300 ease-in-out ${
-          isMobileOpen 
-            ? 'opacity-100 translate-y-0 pointer-events-auto' 
+        className={`md:hidden fixed top-20 left-4 z-[100] flex flex-col gap-3 transition-all duration-300 ease-in-out ${isMobileOpen
+            ? 'opacity-100 translate-y-0 pointer-events-auto'
             : 'opacity-0 -translate-y-4 pointer-events-none'
-        }`}
+          }`}
       >
         <div className="flex flex-col gap-2 p-2 bg-black/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-xl">
           {links.map((link) => {
@@ -242,11 +241,10 @@ export function Sidebar() {
                   if (isActive) e.preventDefault()
                   setIsMobileOpen(false)
                 }}
-                className={`flex items-center p-3 rounded-xl transition-all duration-200 group ${
-                  isActive
+                className={`flex items-center p-3 rounded-xl transition-all duration-200 group ${isActive
                     ? 'text-purple-300 bg-purple-500/20'
                     : 'text-white/80 hover:text-white hover:bg-white/10'
-                }`}
+                  }`}
                 title={link.label}
               >
                 <link.icon className="w-5 h-5 flex-shrink-0" />
@@ -254,7 +252,7 @@ export function Sidebar() {
               </Link>
             )
           })}
-          
+
           <div className="h-px bg-white/10 w-full my-1" />
 
           {/* Import Button (Mobile) */}
@@ -270,8 +268,8 @@ export function Sidebar() {
           </button>
 
           {/* Account Profile (Mobile) */}
-          <Link 
-            href="/account" 
+          <Link
+            href="/account"
             onClick={() => setIsMobileOpen(false)}
             className="flex items-center p-3 rounded-xl transition-all duration-200 group text-white/80 hover:text-white hover:bg-white/10 w-full text-left"
           >
@@ -285,8 +283,8 @@ export function Sidebar() {
         </div>
       </div>
 
-      <input 
-        type="file" 
+      <input
+        type="file"
         accept="application/epub+zip, .epub, application/pdf, .pdf"
         ref={fileInputRef}
         onChange={handleFileChange}
@@ -295,9 +293,8 @@ export function Sidebar() {
 
       {/* Desktop Sidebar */}
       <aside
-        className={`hidden md:flex relative flex-col bg-black/40 backdrop-blur-md border-r border-white/10 transition-all duration-300 ${
-        isCollapsed ? 'w-20' : 'w-64'
-        } h-[100dvh] z-50`}
+        className={`hidden md:flex relative flex-col bg-black/40 backdrop-blur-md border-r border-white/10 transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-64'
+          } h-[100dvh] z-50`}
       >
         {/* Toggle Button */}
         <button
@@ -329,11 +326,10 @@ export function Sidebar() {
                       onClick={(e) => {
                         if (isActive) e.preventDefault()
                       }}
-                      className={`flex items-center px-3 py-2.5 rounded-xl transition-all duration-200 group ${
-                        isActive
+                      className={`flex items-center px-3 py-2.5 rounded-xl transition-all duration-200 group ${isActive
                           ? 'text-purple-300 bg-purple-500/20'
                           : 'text-white/60 hover:text-white hover:bg-white/10'
-                      }`}
+                        }`}
                       title={isCollapsed ? link.label : undefined}
                     >
                       <link.icon className={`w-5 h-5 flex-shrink-0 ${isCollapsed ? 'mx-auto' : ''}`} />
@@ -351,9 +347,8 @@ export function Sidebar() {
           <div className="flex justify-center py-4 border-t border-b border-white/10 flex-shrink-0 mt-4 mb-4">
             <button
               onClick={() => fileInputRef.current?.click()}
-              className={`rounded-full bg-white/5 hover:bg-white/10 border border-white/20 flex items-center justify-center transition-all group ${
-                isCollapsed ? 'w-10 h-10' : 'w-12 h-12'
-              }`}
+              className={`rounded-full bg-white/5 hover:bg-white/10 border border-white/20 flex items-center justify-center transition-all group ${isCollapsed ? 'w-10 h-10' : 'w-12 h-12'
+                }`}
               title="Import Book/PDF"
             >
               <Plus className={`${isCollapsed ? 'w-5 h-5' : 'w-6 h-6'} text-white/70 group-hover:text-white transition-colors`} />
@@ -374,7 +369,7 @@ export function Sidebar() {
                 <User className="w-5 h-5 text-purple-300" />
               )}
             </div>
-            
+
             {!isCollapsed && (
               <div className="ml-3 flex-1 overflow-hidden">
                 <p className="text-sm font-semibold text-white truncate">
@@ -388,15 +383,15 @@ export function Sidebar() {
           </Link>
         </div>
       </aside>
-      
+
       {/* Upload Progress Modal */}
       {isUploading && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div className="bg-[#1a1a1a] border border-white/10 p-8 rounded-2xl flex flex-col items-center max-w-sm w-full mx-4 shadow-2xl">
             <div className="text-white font-medium mb-6 text-lg">Uploading File...</div>
             <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden mb-3">
-              <div 
-                className="h-full bg-white transition-all duration-300 ease-out rounded-full" 
+              <div
+                className="h-full bg-white transition-all duration-300 ease-out rounded-full"
                 style={{ width: `${uploadProgress}%` }}
               />
             </div>
