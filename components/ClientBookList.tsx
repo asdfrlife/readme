@@ -84,34 +84,38 @@ export function ClientBookList({
               {categoryFiles.length}
             </span>
           </div>
-          <div className="flex flex-col gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
             {categoryFiles.map((file) => {
               const { displayName } = parseBookFilename(file.name)
               return (
                 <Link 
                   href={`/view?file=${encodeURIComponent(file.name)}`}
                   key={file.id} 
-                  className="relative w-full h-auto sm:h-[252px] border border-white/20 rounded-2xl bg-[#121212] flex flex-col sm:flex-row shadow-sm hover:border-purple-500/50 hover:shadow-purple-500/10 transition-all overflow-hidden group cursor-pointer"
+                  className="relative flex flex-col w-full group cursor-pointer"
                 >
-                  {file.name.toLowerCase().endsWith('.pdf') ? (
-                    <div className="w-full h-[200px] sm:w-[133px] sm:h-[252px] bg-white/5 flex items-center justify-center border-b sm:border-b-0 sm:border-r border-white/10 flex-shrink-0 relative overflow-hidden">
-                      <Image src="/pdf-icon.jpg" alt="PDF" fill sizes="133px" className="object-cover" />
+                  {/* Movie-poster style container */}
+                  <div className="relative w-full aspect-[2/3] rounded-xl overflow-hidden border border-white/10 group-hover:border-purple-500/50 transition-all duration-300 shadow-sm group-hover:shadow-purple-500/20 bg-white/5">
+                    {file.name.toLowerCase().endsWith('.pdf') ? (
+                      <Image src="/pdf-icon.jpg" alt="PDF" fill sizes="(max-width: 768px) 50vw, 20vw" className="object-cover" />
+                    ) : (
+                      <EpubThumbnail url={urls[file.name] || ''} fileName={file.name} />
+                    )}
+                    {/* Delete button overlay on hover */}
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                    <div className="absolute top-2 right-2 pointer-events-auto">
+                      <DeleteBookButton fileName={file.name} />
                     </div>
-                  ) : (
-                    <EpubThumbnail url={urls[file.name] || ''} fileName={file.name} />
-                  )}
-                  <div className="flex flex-col p-6 flex-1 relative">
-                    <div className="flex items-center gap-3 mb-2">
-                      <FileText className="w-6 h-6 text-purple-400" />
-                      <span className="text-xl font-bold text-white truncate text-left group-hover:text-purple-300 transition-colors pr-12">
-                        {displayName}
-                      </span>
-                    </div>
-                    <p className="text-white/50 text-sm mt-auto">
-                      Imported on {new Date(file.created_at).toLocaleDateString()}
-                    </p>
                   </div>
-                  <DeleteBookButton fileName={file.name} />
+
+                  {/* Text details below poster */}
+                  <div className="mt-3 flex flex-col gap-1 w-full px-1">
+                    <span className="text-sm font-bold text-white truncate group-hover:text-purple-300 transition-colors" title={displayName}>
+                      {displayName}
+                    </span>
+                    <span className="text-xs text-white/50 truncate">
+                      {new Date(file.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
                 </Link>
               )
             })}
