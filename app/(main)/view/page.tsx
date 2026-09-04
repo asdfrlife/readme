@@ -5,6 +5,7 @@ import { BookOpen } from 'lucide-react'
 import { EpubViewer } from '@/components/EpubViewer'
 import { PdfViewer } from '@/components/PdfViewer'
 import { ResizableViewerWrapper } from '@/components/ResizableViewerWrapper'
+import { ReadingTimer } from '@/components/ReadingTimer'
 
 export default async function ViewPage({ searchParams }: Readonly<{ searchParams: Promise<{ file?: string }> }>) {
   const resolvedSearchParams = await searchParams
@@ -64,9 +65,12 @@ export default async function ViewPage({ searchParams }: Readonly<{ searchParams
     <div className="h-full w-full flex flex-col p-2 sm:p-6 bg-black overflow-hidden">
       <ResizableViewerWrapper fileName={fileName}>
         <div className="flex flex-col w-full h-full">
-          <h1 className="text-2xl font-bold text-white truncate w-full mb-4 px-2 tracking-tight">
-            {fileName.replace(/^\d+_/, '')}
-          </h1>
+          <div className="flex items-center justify-between mb-4 px-2">
+            <h1 className="text-2xl font-bold text-white truncate tracking-tight">
+              {fileName.replace(/^\d+_/, '')}
+            </h1>
+            <ReadingTimer />
+          </div>
           {fileName.toLowerCase().endsWith('.pdf') ? (
             <PdfViewer url={signedUrlData.signedUrl} fileName={fileName} />
           ) : (
