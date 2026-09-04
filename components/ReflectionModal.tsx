@@ -31,7 +31,7 @@ export function ReflectionModal({ isOpen, onClose, bookName, quote }: Readonly<R
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-[#1a1a1a] border border-white/20 p-6 rounded-2xl w-full max-w-2xl shadow-2xl relative animate-in zoom-in-95 duration-200">
+      <div className="bg-[#1a1a1a] border border-white/20 p-6 rounded-2xl w-full max-w-md shadow-2xl relative animate-in zoom-in-95 duration-200">
         <button 
           onClick={onClose}
           className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors"
@@ -39,12 +39,9 @@ export function ReflectionModal({ isOpen, onClose, bookName, quote }: Readonly<R
           <X className="w-5 h-5" />
         </button>
 
-        <h2 className="text-xl font-bold text-white mb-2">New Reflection</h2>
-        <p className="text-white/50 text-sm mb-6 flex items-center gap-2">
-          From book: <span className="text-purple-400 font-medium">{bookName.replace(/^\d+_/, '')}</span>
-        </p>
+        <h2 className="text-xl font-bold text-white mb-4">New Reflection</h2>
 
-        <div className="bg-white/5 border-l-4 border-purple-500 p-4 rounded-r-lg mb-6 max-h-40 overflow-y-auto">
+        <div className="bg-white/5 border-l-4 border-purple-500 p-4 rounded-r-lg mb-6 max-h-32 overflow-y-auto custom-scrollbar">
           <p className="text-white/80 italic text-sm font-serif">
             &quot;{quote}&quot;
           </p>

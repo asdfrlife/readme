@@ -52,7 +52,7 @@ const VirtualizedPage = React.memo(function VirtualizedPage({ pageNumber, width 
 export default function PdfViewerClient({ url, fileName }: Readonly<{ url: string, fileName: string }>) {
   const [numPages, setNumPages] = useState<number>(0)
   const [tooltip, setTooltip] = useState<{ x: number, y: number, text: string, isMobile?: boolean } | null>(null)
-  const [isReflectionModalOpen, setIsReflectionModalOpen] = useState(false)
+  const [reflectionQuote, setReflectionQuote] = useState<string | null>(null)
   
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -168,7 +168,9 @@ export default function PdfViewerClient({ url, fileName }: Readonly<{ url: strin
               <span className="font-semibold tracking-wide text-xs">Ask AI</span>
             </button>
             <button 
-              onClick={() => setIsReflectionModalOpen(true)}
+              onClick={() => {
+                setReflectionQuote(tooltip.text)
+              }}
               className="flex items-center gap-1.5 px-3 py-2 bg-[#121212] hover:bg-[#1a1a1a] text-white text-sm rounded-lg border border-purple-500/50 transition-all hover:scale-105 active:scale-95 shadow-xl"
             >
               <PenLine className="w-4 h-4 text-purple-400" />
@@ -177,13 +179,13 @@ export default function PdfViewerClient({ url, fileName }: Readonly<{ url: strin
           </div>
         )}
         <ReflectionModal 
-          isOpen={isReflectionModalOpen} 
+          isOpen={!!reflectionQuote} 
           onClose={() => {
-            setIsReflectionModalOpen(false)
+            setReflectionQuote(null)
             setTooltip(null)
           }} 
           bookName={fileName} 
-          quote={tooltip?.text || ''} 
+          quote={reflectionQuote || ''} 
         />
       </div>
 

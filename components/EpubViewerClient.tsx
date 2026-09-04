@@ -12,7 +12,7 @@ export default function EpubViewerClient({ url, fileName }: Readonly<{ url: stri
   const [atStart, setAtStart] = useState(true)
   const [atEnd, setAtEnd] = useState(false)
   const [tooltip, setTooltip] = useState<{ x: number, y: number, text: string } | null>(null)
-  const [isReflectionModalOpen, setIsReflectionModalOpen] = useState(false)
+  const [reflectionQuote, setReflectionQuote] = useState<string | null>(null)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   useEffect(() => {
@@ -179,7 +179,9 @@ export default function EpubViewerClient({ url, fileName }: Readonly<{ url: stri
               <span className="font-semibold tracking-wide text-xs">Ask AI</span>
             </button>
             <button 
-              onClick={() => setIsReflectionModalOpen(true)}
+              onClick={() => {
+                setReflectionQuote(tooltip.text)
+              }}
               className="flex items-center gap-1.5 px-3 py-2 bg-[#121212] hover:bg-[#1a1a1a] text-white text-sm rounded-lg border border-purple-500/50 transition-all hover:scale-105 active:scale-95 shadow-xl"
             >
               <PenLine className="w-4 h-4 text-purple-400" />
@@ -188,13 +190,13 @@ export default function EpubViewerClient({ url, fileName }: Readonly<{ url: stri
           </div>
         )}
         <ReflectionModal 
-          isOpen={isReflectionModalOpen} 
+          isOpen={!!reflectionQuote} 
           onClose={() => {
-            setIsReflectionModalOpen(false)
+            setReflectionQuote(null)
             setTooltip(null)
           }} 
           bookName={fileName} 
-          quote={tooltip?.text || ''} 
+          quote={reflectionQuote || ''} 
         />
       </div>
       
