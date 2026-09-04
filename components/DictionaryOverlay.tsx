@@ -28,19 +28,33 @@ export function DictionaryOverlay({ wordInfo }: Readonly<DictionaryOverlayProps>
       return
     }
 
-    const currentWord = wordInfo.word
+    const rawWord = wordInfo.word
+    
+    // Clean it before fetching: strip anything that isn't a letter, apostrophe, or hyphen, and lowercase it.
+    const cleanWord = rawWord.replace(/[^a-zA-Z\-\']/g, '').toLowerCase()
+    
+    if (!cleanWord) {
+      setActiveWord(null)
+      return
+    }
+
     const timer = setTimeout(async () => {
-      setActiveWord(currentWord)
+      setActiveWord(rawWord) // Keep original (uncleaned) word for display
       setLoading(true)
       setError(false)
       
       try {
-        const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${currentWord}`)
-        if (!res.ok) throw new Error('Not found')
+        const fetchUrl = `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(cleanWord)}`
+        const res = await fetch(fetchUrl)
+        if (!res.ok) {
+          setError(true)
+          setDefinition(null)
+          return
+        }
         const data = await res.json()
         setDefinition(data[0])
-      } catch {
-        setError(true)
+        setError(false)
+      } catch {setError(true)
         setDefinition(null)
       } finally {
         setLoading(false)

@@ -36,8 +36,8 @@ export function extractWordFromPoint(doc: Document, x: number, y: number): { wor
     
     const offset = range.startOffset;
     
-    // Find word boundaries (alphanumeric and hyphen/apostrophe if inside word)
-    const isWordChar = (char: string) => /[a-zA-Z0-9\-\']/.test(char);
+    // Find boundaries using non-whitespace characters to encircle the entire visual word
+    const isWordChar = (char: string) => /\S/.test(char);
     
     let start = offset;
     let end = offset;
@@ -54,23 +54,18 @@ export function extractWordFromPoint(doc: Document, x: number, y: number): { wor
     while (start > 0 && isWordChar(text[start - 1])) start--;
     while (end < text.length && isWordChar(text[end])) end++;
     
-    const word = text.slice(start, end);
-    const cleanWord = word.replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, '');
-    
-    if (!cleanWord || cleanWord.length < 2) return null;
+    const word = text.slice(start, end).trim();
+    if (!word || word.length < 2) return null;
     
     const wordRange = doc.createRange();
-    const actualStart = start + word.indexOf(cleanWord);
-    const actualEnd = actualStart + cleanWord.length;
-    
-    wordRange.setStart(node, actualStart);
-    wordRange.setEnd(node, actualEnd);
+    wordRange.setStart(node, start);
+    wordRange.setEnd(node, end);
     
     const rects = wordRange.getClientRects();
     if (rects.length === 0) return null;
     
     return {
-      word: cleanWord.toLowerCase(),
+      word,
       rect: rects[0]
     };
   } catch {
