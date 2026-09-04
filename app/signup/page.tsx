@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import Link from 'next/link'
+import { InteractiveBackground } from '@/components/InteractiveBackground'
 
 function isValidEmail(email: string) {
   const atIndex = email.indexOf("@");
@@ -116,9 +117,11 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col justify-center items-center p-4">
-      <div className="w-full max-w-md border border-white/20 p-8 rounded-lg bg-black/50 backdrop-blur-md">
-        <h1 className="text-3xl font-bold mb-6 text-center">Sign Up</h1>
+    <div className="min-h-screen text-white flex flex-col justify-center items-center p-4 relative overflow-hidden">
+      <InteractiveBackground />
+      
+      <div className="w-full max-w-md border border-white/10 p-8 rounded-2xl bg-black/40 backdrop-blur-xl shadow-2xl hover:border-purple-500/30 transition-all duration-500 hover:shadow-purple-500/10 hover:-translate-y-1 animate-in fade-in zoom-in-95 duration-700">
+        <h1 className="text-3xl font-bold mb-6 text-center bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">Sign Up</h1>
 
         {error && (
           <div className="bg-white/10 border border-white/30 text-white p-3 rounded mb-4 text-sm">
@@ -134,7 +137,8 @@ export default function SignUpPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-transparent border border-white/30 rounded px-4 py-2 text-white focus:outline-none focus:border-white transition-colors"
+              className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/60 focus:ring-1 focus:ring-purple-500/60 transition-all placeholder:text-white/20"
+              placeholder="name@example.com"
               required
             />
           </div>
@@ -145,7 +149,8 @@ export default function SignUpPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-transparent border border-white/30 rounded px-4 py-2 text-white focus:outline-none focus:border-white transition-colors"
+              className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/60 focus:ring-1 focus:ring-purple-500/60 transition-all placeholder:text-white/20"
+              placeholder="••••••••"
               required
             />
           </div>
@@ -156,7 +161,8 @@ export default function SignUpPage() {
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full bg-transparent border border-white/30 rounded px-4 py-2 text-white focus:outline-none focus:border-white transition-colors"
+              className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/60 focus:ring-1 focus:ring-purple-500/60 transition-all placeholder:text-white/20"
+              placeholder="••••••••"
               required
             />
           </div>
@@ -164,7 +170,7 @@ export default function SignUpPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-white text-black font-semibold py-2 rounded hover:bg-white/90 transition-colors disabled:opacity-50 mt-4"
+            className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white font-semibold py-3 rounded-xl hover:opacity-90 transition-all shadow-lg shadow-purple-500/20 active:scale-[0.98] disabled:opacity-50 mt-6"
           >
             {loading ? 'Signing up...' : 'Sign Up'}
           </button>
@@ -179,7 +185,7 @@ export default function SignUpPage() {
         <button
           type="button"
           onClick={handleGoogleSignUp}
-          className="w-full mt-6 bg-transparent border border-white text-white font-semibold py-2 rounded flex items-center justify-center gap-2 hover:bg-white/10 active:scale-95 transition-all"
+          className="w-full mt-6 bg-black/30 border border-white/10 text-white font-medium py-3 rounded-xl flex items-center justify-center gap-3 hover:bg-white/5 hover:border-white/20 active:scale-[0.98] transition-all"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path
@@ -202,9 +208,9 @@ export default function SignUpPage() {
           Sign up with Google
         </button>
 
-        <p className="mt-8 text-center text-sm text-white/70">
+        <p className="mt-8 text-center text-sm text-white/50">
           Already have an account?{' '}
-          <Link href="/signin" className="text-white font-medium hover:underline">
+          <Link href="/signin" className="text-purple-400 font-medium hover:text-purple-300 hover:underline transition-colors">
             Sign In
           </Link>
         </p>
