@@ -8,7 +8,7 @@ import { Image as ImageIcon } from 'lucide-react'
 // Cache to prevent re-extracting the EPUB cover every time the page changes
 const coverCache = new Map<string, string>()
 
-export default function EpubThumbnailClient({ url }: Readonly<{ url: string }>) {
+export default function EpubThumbnailClient({ url, fileName }: Readonly<{ url: string, fileName: string }>) {
   const [coverUrl, setCoverUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -17,9 +17,10 @@ export default function EpubThumbnailClient({ url }: Readonly<{ url: string }>) 
     let isMounted = true
 
     const extractCover = async () => {
-      if (coverCache.has(url)) {
+      // Use fileName as the cache key because the signed URL changes on every page navigation
+      if (coverCache.has(fileName)) {
         if (isMounted) {
-          setCoverUrl(coverCache.get(url)!)
+          setCoverUrl(coverCache.get(fileName)!)
           setLoading(false)
         }
         return
@@ -37,7 +38,7 @@ export default function EpubThumbnailClient({ url }: Readonly<{ url: string }>) 
         
         if (isMounted) {
           if (cover) {
-            coverCache.set(url, cover)
+            coverCache.set(fileName, cover)
             setCoverUrl(cover)
           } else {
             setError(true)
@@ -59,7 +60,7 @@ export default function EpubThumbnailClient({ url }: Readonly<{ url: string }>) 
       isMounted = false
       // Intentionally not revoking the blob URL so it remains cached in memory across page loads
     }
-  }, [url])
+  }, [url, fileName])
 
   return (
     <div className="w-full h-[200px] sm:w-[133px] sm:h-[252px] bg-white/5 flex flex-col items-center justify-center overflow-hidden flex-shrink-0 relative border-b sm:border-b-0 sm:border-r border-white/10">

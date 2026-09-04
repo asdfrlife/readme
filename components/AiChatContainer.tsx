@@ -12,7 +12,7 @@ const UserBlockquote = ({node: _node, ...props}: any) => (
 )
 
 export function AiChatContainer({ bookTitle }: Readonly<{ bookTitle?: string }>) {
-  const supabase = createClient()
+  const [supabase] = useState(() => createClient())
   
   const [models, setModels] = useState<any[]>([])
   const [selectedModel, setSelectedModel] = useState<string>('')

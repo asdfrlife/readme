@@ -8,7 +8,7 @@ export function DeleteBookButton({ fileName }: Readonly<{ fileName: string }>) {
   const [isDeleting, setIsDeleting] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const buttonRef = useRef<HTMLButtonElement>(null)
-  const supabase = createClient()
+  const [supabase] = useState(() => createClient())
 
   const handleDeleteClick = (e: React.MouseEvent) => {
     e.preventDefault()

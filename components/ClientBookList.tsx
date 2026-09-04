@@ -20,9 +20,10 @@ export function ClientBookList({
   const [files, setFiles] = useState(initialFiles)
   const [urls, setUrls] = useState(initialUrls)
 
+  const [supabase] = useState(() => createClient())
+
   useEffect(() => {
     const handleBookUploaded = async () => {
-      const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
@@ -97,7 +98,7 @@ export function ClientBookList({
                       <Image src="/pdf-icon.jpg" alt="PDF" fill sizes="133px" className="object-cover" />
                     </div>
                   ) : (
-                    <EpubThumbnail url={urls[file.name] || ''} />
+                    <EpubThumbnail url={urls[file.name] || ''} fileName={file.name} />
                   )}
                   <div className="flex flex-col p-6 flex-1 relative">
                     <div className="flex items-center gap-3 mb-2">

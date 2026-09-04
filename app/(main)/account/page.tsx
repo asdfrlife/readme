@@ -8,7 +8,7 @@ import { createClient } from '@/utils/supabase/client'
 
 export default function HomePage() {
   const router = useRouter()
-  const supabase = createClient()
+  const [supabase] = useState(() => createClient())
 
   const [profile, setProfile] = useState<{ name: string; username: string } | null>(null)
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
