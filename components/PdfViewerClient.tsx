@@ -4,6 +4,8 @@ import React, { useState, useRef, useEffect } from 'react'
 import { Document, Page, pdfjs } from 'react-pdf'
 import { Bot } from 'lucide-react'
 import { useInView } from 'react-intersection-observer'
+import { DictionaryOverlay } from './DictionaryOverlay'
+import { extractWordFromPoint, type HoveredWordInfo } from '@/utils/wordHover'
 
 import 'react-pdf/dist/Page/AnnotationLayer.css'
 import 'react-pdf/dist/Page/TextLayer.css'
@@ -51,6 +53,7 @@ const VirtualizedPage = React.memo(function VirtualizedPage({ pageNumber, width 
 export default function PdfViewerClient({ url }: Readonly<{ url: string, fileName: string }>) {
   const [numPages, setNumPages] = useState<number>(0)
   const [tooltip, setTooltip] = useState<{ x: number, y: number, text: string, isMobile?: boolean } | null>(null)
+  const [hoveredWord, setHoveredWord] = useState<HoveredWordInfo | null>(null)
   
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -112,6 +115,40 @@ export default function PdfViewerClient({ url }: Readonly<{ url: string, fileNam
     }
   }, [])
 
+  // Handle word hover for dictionary
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout
+    const container = containerRef.current
+    if (!container) return
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (window.innerWidth < 768) return // Desktop only
+
+      clearTimeout(timeoutId)
+      timeoutId = setTimeout(() => {
+        const info = extractWordFromPoint(document, e.clientX, e.clientY)
+        
+        const elementUnderCursor = document.elementFromPoint(e.clientX, e.clientY)
+        if (info && elementUnderCursor && container.contains(elementUnderCursor)) {
+          setHoveredWord(info)
+        } else {
+          setHoveredWord(null)
+        }
+      }, 50)
+    }
+
+    const handleMouseLeave = () => setHoveredWord(null)
+
+    document.addEventListener('mousemove', handleMouseMove)
+    container.addEventListener('mouseleave', handleMouseLeave)
+    
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      container.removeEventListener('mouseleave', handleMouseLeave)
+      clearTimeout(timeoutId)
+    }
+  }, [])
+
   const isMobileSize = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
   const padding = isMobileSize ? 16 : 60;
   const pageWidth = typeof window !== 'undefined' ? Math.min(window.innerWidth - padding, 800) : 800;
@@ -167,6 +204,8 @@ export default function PdfViewerClient({ url }: Readonly<{ url: string, fileNam
             </button>
           </div>
         )}
+
+        <DictionaryOverlay wordInfo={hoveredWord} />
       </div>
 
 

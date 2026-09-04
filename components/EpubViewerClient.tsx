@@ -4,6 +4,8 @@
 import { useEffect, useRef, useState } from 'react'
 import ePub from 'epubjs'
 import { ChevronLeft, ChevronRight, Bot } from 'lucide-react'
+import { DictionaryOverlay } from './DictionaryOverlay'
+import { extractWordFromPoint, type HoveredWordInfo } from '@/utils/wordHover'
 
 export default function EpubViewerClient({ url, fileName }: Readonly<{ url: string, fileName: string }>) {
   const viewerRef = useRef<HTMLDivElement>(null)
@@ -12,6 +14,7 @@ export default function EpubViewerClient({ url, fileName }: Readonly<{ url: stri
   const [atEnd, setAtEnd] = useState(false)
   const [tooltip, setTooltip] = useState<{ x: number, y: number, text: string } | null>(null)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [hoveredWord, setHoveredWord] = useState<HoveredWordInfo | null>(null)
 
   useEffect(() => {
     if (!viewerRef.current) return
@@ -59,6 +62,32 @@ export default function EpubViewerClient({ url, fileName }: Readonly<{ url: stri
           } catch (e: any) {
             console.error("Stylesheet error:", e)
           }
+
+          // Dictionary Hover Logic inside iframe
+          let timeoutId: NodeJS.Timeout
+          contents.document.addEventListener('mousemove', (e: MouseEvent) => {
+            if (window.innerWidth < 768) return // Desktop only
+
+            clearTimeout(timeoutId)
+            timeoutId = setTimeout(() => {
+              const info = extractWordFromPoint(contents.document, e.clientX, e.clientY)
+              if (info) {
+                const iframe = contents.document.defaultView?.frameElement
+                const iframeRect = iframe ? iframe.getBoundingClientRect() : { left: 0, top: 0 }
+                
+                setHoveredWord({
+                  ...info,
+                  containerOffset: { x: iframeRect.left, y: iframeRect.top }
+                })
+              } else {
+                setHoveredWord(null)
+              }
+            }, 50)
+          })
+
+          contents.document.addEventListener('mouseleave', () => {
+            setHoveredWord(null)
+          })
         })
 
         r.on('relocated', (location: any) => {
@@ -178,6 +207,8 @@ export default function EpubViewerClient({ url, fileName }: Readonly<{ url: stri
             </button>
           </div>
         )}
+
+        <DictionaryOverlay wordInfo={hoveredWord} />
       </div>
       
       {/* Navigation Overlays */}
