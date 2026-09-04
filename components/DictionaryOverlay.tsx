@@ -70,7 +70,7 @@ export function DictionaryOverlay({ wordInfo }: Readonly<DictionaryOverlayProps>
         }}
       />
       
-      {activeWord === wordInfo.word && !error && (
+      {activeWord === wordInfo.word && (
         <div 
           className="fixed z-[100] bg-[#1a1a1a] text-white p-4 rounded-xl shadow-2xl border border-white/20 w-72 animate-in fade-in zoom-in-95 pointer-events-none"
           style={{
@@ -84,7 +84,11 @@ export function DictionaryOverlay({ wordInfo }: Readonly<DictionaryOverlayProps>
               <div className="w-4 h-4 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
               Fetching definition...
             </div>
-          ) : definition ? (
+          ) : error || !definition || !definition.meanings || definition.meanings.length === 0 ? (
+            <div className="text-sm text-white/50 italic">
+              No definition found for this word.
+            </div>
+          ) : (
             <div className="text-sm text-white/80 max-h-48 overflow-y-hidden flex flex-col gap-2">
               <div>
                 <span className="text-xs text-white/40 italic mr-2">{definition.meanings[0]?.partOfSpeech}</span>
@@ -97,7 +101,7 @@ export function DictionaryOverlay({ wordInfo }: Readonly<DictionaryOverlayProps>
                 </div>
               )}
             </div>
-          ) : null}
+          )}
         </div>
       )}
     </>
