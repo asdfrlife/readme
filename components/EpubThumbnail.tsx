@@ -11,6 +11,6 @@ const EpubThumbnailClient = dynamic(() => import('./EpubThumbnailClient'), {
   ),
 })
 
-export function EpubThumbnail({ url }: { url: string }) {
+export function EpubThumbnail({ url }: Readonly<{ url: string }>) {
   return <EpubThumbnailClient url={url} />
 }

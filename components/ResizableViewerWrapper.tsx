@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 
 import { AiChatContainer } from './AiChatContainer'
 
-export function ResizableViewerWrapper({ children, fileName }: { children: React.ReactNode, fileName: string }) {
+export function ResizableViewerWrapper({ children, fileName }: Readonly<{ children: React.ReactNode, fileName: string }>) {
   // A4 paper proportion minimum (approx 700px for typical screens)
   const [width, setWidth] = useState(700)
   const [isResizing, setIsResizing] = useState(false)

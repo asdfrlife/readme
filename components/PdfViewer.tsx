@@ -12,6 +12,6 @@ const PdfViewerClient = dynamic(() => import('./PdfViewerClient'), {
   ),
 })
 
-export function PdfViewer({ url, fileName }: { url: string, fileName: string }) {
+export function PdfViewer({ url, fileName }: Readonly<{ url: string, fileName: string }>) {
   return <PdfViewerClient url={url} fileName={fileName} />
 }

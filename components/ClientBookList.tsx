@@ -10,10 +10,10 @@ import { createClient } from '@/utils/supabase/client'
 export function ClientBookList({ 
   initialFiles, 
   initialUrls 
-}: { 
+}: Readonly<{ 
   initialFiles: any[], 
   initialUrls: Record<string, string> 
-}) {
+}>) {
   const [files, setFiles] = useState(initialFiles)
   const [urls, setUrls] = useState(initialUrls)
 

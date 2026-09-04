@@ -32,7 +32,6 @@ export default function SignUpPage() {
   }, [])
 
   const supabase = createClient()
-
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
@@ -109,7 +108,7 @@ export default function SignUpPage() {
         redirectTo: `${window.location.origin}/auth/callback?next=/profile`,
       },
     })
-    
+
     if (error) {
       setError(error.message)
     }
@@ -119,7 +118,7 @@ export default function SignUpPage() {
     <div className="min-h-screen bg-black text-white flex flex-col justify-center items-center p-4">
       <div className="w-full max-w-md border border-white/20 p-8 rounded-lg bg-black/50 backdrop-blur-md">
         <h1 className="text-3xl font-bold mb-6 text-center">Sign Up</h1>
-        
+
         {error && (
           <div className="bg-white/10 border border-white/30 text-white p-3 rounded mb-4 text-sm">
             {error}

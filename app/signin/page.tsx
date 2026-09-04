@@ -5,6 +5,13 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import Link from 'next/link'
 
+function isValidEmail(email: string) {
+  const atIndex = email.indexOf("@");
+  if (atIndex < 1 || atIndex !== email.lastIndexOf("@")) return false;
+  const [local, domain] = email.split("@");
+  return local.length > 0 && domain.includes(".") && !domain.startsWith(".") && !domain.endsWith(".");
+}
+
 export default function SignInPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')
@@ -34,6 +41,12 @@ export default function SignInPage() {
     e.preventDefault()
     setError(null)
     setLoading(true)
+
+    if (!isValidEmail(email)) {
+      setError('Please enter a valid email address.')
+      setLoading(false)
+      return
+    }
 
     const { error: signInError } = await supabase.auth.signInWithPassword({
       email,

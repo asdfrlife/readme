@@ -1,16 +1,14 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, BookOpen } from 'lucide-react'
+import { BookOpen } from 'lucide-react'
 import { EpubViewer } from '@/components/EpubViewer'
 import { PdfViewer } from '@/components/PdfViewer'
 import { ResizableViewerWrapper } from '@/components/ResizableViewerWrapper'
 
-export default async function ViewPage(props: {
-  searchParams: Promise<{ file?: string }>
-}) {
-  const searchParams = await props.searchParams
-  const fileName = searchParams.file
+export default async function ViewPage({ searchParams }: Readonly<{ searchParams: Promise<{ file?: string }> }>) {
+  const resolvedSearchParams = await searchParams
+  const fileName = resolvedSearchParams.file
 
   if (!fileName) {
     return (

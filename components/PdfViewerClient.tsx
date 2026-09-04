@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react'
 import { Document, Page, pdfjs } from 'react-pdf'
-import { ChevronLeft, ChevronRight, Bot } from 'lucide-react'
+import { Bot } from 'lucide-react'
 import { useInView } from 'react-intersection-observer'
 
 import 'react-pdf/dist/Page/AnnotationLayer.css'
@@ -48,7 +48,7 @@ const VirtualizedPage = React.memo(function VirtualizedPage({ pageNumber, width 
   )
 })
 
-export default function PdfViewerClient({ url, fileName }: { url: string, fileName: string }) {
+export default function PdfViewerClient({ url, fileName }: Readonly<{ url: string, fileName: string }>) {
   const [numPages, setNumPages] = useState<number>(0)
   const [tooltip, setTooltip] = useState<{ x: number, y: number, text: string, isMobile?: boolean } | null>(null)
   
@@ -62,46 +62,46 @@ export default function PdfViewerClient({ url, fileName }: { url: string, fileNa
   useEffect(() => {
     let timeoutId: NodeJS.Timeout
 
+    const processSelection = () => {
+      const selection = window.getSelection()
+      if (!selection) return
+      
+      const text = selection.toString()
+      if (!text.trim()) {
+        setTooltip(null)
+        return
+      }
+
+      // CRITICAL: Ensure the selection is actually inside the PDF container
+      const container = containerRef.current
+      if (!container || !selection.anchorNode || !container.contains(selection.anchorNode)) {
+        setTooltip(null)
+        return
+      }
+
+      if (selection.rangeCount === 0) return
+      const range = selection.getRangeAt(0)
+      const rects = range.getClientRects()
+      if (rects.length === 0) return
+        
+      const isMobile = window.innerWidth < 768
+      const targetRect = isMobile ? rects[rects.length - 1] : rects[0] // end of selection for mobile, start for desktop
+      const containerRect = container.getBoundingClientRect()
+
+      if (containerRect && targetRect.width > 0 && targetRect.height > 0) {
+        setTooltip({
+          x: (isMobile ? targetRect.right : targetRect.left) - containerRect.left + container.scrollLeft,
+          y: (isMobile ? targetRect.bottom : targetRect.top) - containerRect.top + container.scrollTop,
+          text: text.trim(),
+          isMobile
+        })
+      }
+    }
+
     const handleSelectionChange = () => {
       // Debounce to allow mobile native selection to settle
       clearTimeout(timeoutId)
-      timeoutId = setTimeout(() => {
-        const selection = window.getSelection()
-        if (!selection) return
-        
-        const text = selection.toString()
-        if (!text.trim()) {
-          setTooltip(null)
-          return
-        }
-
-        // CRITICAL: Ensure the selection is actually inside the PDF container
-        const container = containerRef.current
-        if (!container || !selection.anchorNode || !container.contains(selection.anchorNode)) {
-          setTooltip(null)
-          return
-        }
-
-        if (selection.rangeCount > 0) {
-          const range = selection.getRangeAt(0)
-          const rects = range.getClientRects()
-          
-          if (rects.length > 0) {
-            const isMobile = window.innerWidth < 768
-            const targetRect = isMobile ? rects[rects.length - 1] : rects[0] // end of selection for mobile, start for desktop
-            const containerRect = container.getBoundingClientRect()
-
-            if (containerRect && targetRect.width > 0 && targetRect.height > 0) {
-              setTooltip({
-                x: (isMobile ? targetRect.right : targetRect.left) - containerRect.left + container.scrollLeft,
-                y: (isMobile ? targetRect.bottom : targetRect.top) - containerRect.top + container.scrollTop,
-                text: text.trim(),
-                isMobile
-              })
-            }
-          }
-        }
-      }, 100) // 100ms debounce is perfect for mobile dragging
+      timeoutId = setTimeout(processSelection, 100) // 100ms debounce is perfect for mobile dragging
     }
 
     document.addEventListener('selectionchange', handleSelectionChange)
@@ -111,6 +111,10 @@ export default function PdfViewerClient({ url, fileName }: { url: string, fileNa
       clearTimeout(timeoutId)
     }
   }, [])
+
+  const isMobileSize = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
+  const padding = isMobileSize ? 16 : 60;
+  const pageWidth = typeof window !== 'undefined' ? Math.min(window.innerWidth - padding, 800) : 800;
 
   return (
     <div className="flex-1 w-full h-full bg-[#f4f4f5] relative border border-white/10 rounded-2xl overflow-hidden group flex">
@@ -138,7 +142,7 @@ export default function PdfViewerClient({ url, fileName }: { url: string, fileNa
             <VirtualizedPage 
               key={`page_${index + 1}`}
               pageNumber={index + 1} 
-              width={typeof window !== 'undefined' ? Math.min(window.innerWidth - (window.innerWidth < 768 ? 16 : 60), 800) : 800}
+              width={pageWidth}
             />
           ))}
         </Document>

@@ -4,7 +4,7 @@ import { useState, useRef } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { Trash2, AlertTriangle } from 'lucide-react'
 
-export function DeleteBookButton({ fileName }: { fileName: string }) {
+export function DeleteBookButton({ fileName }: Readonly<{ fileName: string }>) {
   const [isDeleting, setIsDeleting] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const buttonRef = useRef<HTMLButtonElement>(null)

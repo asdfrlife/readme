@@ -90,9 +90,11 @@ export default function HomePage() {
     <div className="h-full w-full flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md border border-white/20 p-8 rounded-2xl bg-white/5 backdrop-blur-md flex flex-col items-center text-center">
 
-        {error ? (
+        {error && (
           <p className="text-red-400">{error}</p>
-        ) : profile ? (
+        )}
+        
+        {!error && profile && (
           <>
             <div className="relative w-32 h-32 rounded-full border-4 border-white/20 overflow-hidden mb-6 shadow-2xl">
               {avatarUrl ? (
@@ -114,7 +116,7 @@ export default function HomePage() {
               Sign Out
             </button>
           </>
-        ) : null}
+        )}
 
       </div>
     </div>

@@ -3,14 +3,21 @@ import { Send, Bot, MessageSquarePlus, History, X } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import { createClient } from '@/utils/supabase/client'
 
-export function AiChatContainer({ bookTitle }: { bookTitle?: string }) {
+const UserBlockquote = ({node, ...props}: any) => (
+  <blockquote 
+    className="mt-2 mb-1 pl-3 border-l-[3px] border-white/50 italic bg-black/20 py-2 pr-3 rounded-r-lg text-white/90 text-sm shadow-inner" 
+    {...props} 
+  />
+)
+
+export function AiChatContainer({ bookTitle }: Readonly<{ bookTitle?: string }>) {
   const supabase = createClient()
   
   const [models, setModels] = useState<any[]>([])
   const [selectedModel, setSelectedModel] = useState<string>('')
   
   const [message, setMessage] = useState('')
-  const [messages, setMessages] = useState<{role: 'user' | 'assistant', content: string}[]>([])
+  const [messages, setMessages] = useState<{id?: string, role: 'user' | 'assistant', content: string}[]>([])
   const [isGenerating, setIsGenerating] = useState(false)
   
   const [conversationId, setConversationId] = useState<string | null>(null)
@@ -31,7 +38,9 @@ export function AiChatContainer({ bookTitle }: { bookTitle?: string }) {
             if (parsed.length > 0) {
               setSelectedModel(parsed[0].id)
             }
-          } catch (e) {}
+          } catch (e) {
+            // Ignore parse error from localStorage
+          }
         }
       }
     }
@@ -134,7 +143,7 @@ export function AiChatContainer({ bookTitle }: { bookTitle?: string }) {
       return
     }
 
-    const newMessages = [...messages, { role: 'user' as const, content: finalMessage }]
+    const newMessages = [...messages, { id: crypto.randomUUID(), role: 'user' as const, content: finalMessage }]
     setMessages(newMessages)
     setMessage('')
     setQuotedText(null)
@@ -160,7 +169,7 @@ export function AiChatContainer({ bookTitle }: { bookTitle?: string }) {
         throw new Error(data.error || 'Failed to generate response')
       }
 
-      setMessages([...newMessages, { role: 'assistant' as const, content: data.text }])
+      setMessages([...newMessages, { id: crypto.randomUUID(), role: 'assistant' as const, content: data.text }])
       
       if (!conversationId && data.conversationId) {
         setConversationId(data.conversationId)
@@ -168,7 +177,7 @@ export function AiChatContainer({ bookTitle }: { bookTitle?: string }) {
       }
     } catch (err: any) {
       console.error(err)
-      setMessages([...newMessages, { role: 'assistant' as const, content: `Error: ${err.message}` }])
+      setMessages([...newMessages, { id: crypto.randomUUID(), role: 'assistant' as const, content: `Error: ${err.message}` }])
     } finally {
       setIsGenerating(false)
     }
@@ -277,7 +286,7 @@ export function AiChatContainer({ bookTitle }: { bookTitle?: string }) {
         ) : (
           <div className="flex flex-col gap-2">
             {messages.map((msg, idx) => (
-              <div key={idx} className={`flex w-full ${msg.role === 'user' ? 'justify-end' : 'justify-start'} mb-2`}>
+              <div key={msg.id || `msg-${idx}`} className={`flex w-full ${msg.role === 'user' ? 'justify-end' : 'justify-start'} mb-2`}>
                 <div className={`max-w-[85%] px-4 py-3 shadow-sm ${
                   msg.role === 'user'
                     ? 'bg-purple-600 text-white rounded-2xl rounded-tr-sm'
@@ -286,12 +295,7 @@ export function AiChatContainer({ bookTitle }: { bookTitle?: string }) {
                   <div className={`text-sm leading-relaxed ${msg.role === 'assistant' ? 'prose prose-invert max-w-none prose-p:leading-relaxed prose-pre:bg-black/50 prose-pre:p-2 prose-pre:rounded-lg prose-code:text-purple-300' : 'whitespace-pre-wrap'}`}>
                     <ReactMarkdown
                       components={msg.role === 'user' ? {
-                        blockquote: ({node, ...props}) => (
-                          <blockquote 
-                            className="mt-2 mb-1 pl-3 border-l-[3px] border-white/50 italic bg-black/20 py-2 pr-3 rounded-r-lg text-white/90 text-sm shadow-inner" 
-                            {...props} 
-                          />
-                        )
+                        blockquote: UserBlockquote
                       } : undefined}
                     >
                       {msg.content}

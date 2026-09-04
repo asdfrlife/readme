@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import ePub from 'epubjs'
 import { ChevronLeft, ChevronRight, Bot } from 'lucide-react'
 
-export default function EpubViewerClient({ url, fileName }: { url: string, fileName: string }) {
+export default function EpubViewerClient({ url, fileName }: Readonly<{ url: string, fileName: string }>) {
   const viewerRef = useRef<HTMLDivElement>(null)
   const [rendition, setRendition] = useState<any>(null)
   const [atStart, setAtStart] = useState(true)
@@ -64,7 +64,7 @@ export default function EpubViewerClient({ url, fileName }: { url: string, fileN
           setAtStart(location.atStart)
           setAtEnd(location.atEnd)
           setTooltip(null) // clear tooltip on scroll/change
-          if (location.start && location.start.cfi) {
+          if (location.start?.cfi) {
             localStorage.setItem(`epub_progress_${fileName}`, location.start.cfi)
           }
         })

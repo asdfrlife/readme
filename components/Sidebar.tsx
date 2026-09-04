@@ -10,7 +10,6 @@ import {
   Home,
   User,
   LayoutDashboard,
-  Settings,
   Plus,
   BookOpen,
   Key,
@@ -20,7 +19,6 @@ import {
 export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const pathname = usePathname()
-  const router = useRouter()
   const supabase = createClient()
 
   const [profile, setProfile] = useState<{ name: string; username: string } | null>(null)
@@ -40,11 +38,6 @@ export function Sidebar() {
     }, 4000)
   }
 
-  const handleMobileInteraction = () => {
-    if (isMobileOpen) {
-      openMobileMenu()
-    }
-  }
 
   useEffect(() => {
     return () => {

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import ePub from 'epubjs'
 import { Image as ImageIcon } from 'lucide-react'
 
-export default function EpubThumbnailClient({ url }: { url: string }) {
+export default function EpubThumbnailClient({ url }: Readonly<{ url: string }>) {
   const [coverUrl, setCoverUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -46,7 +46,7 @@ export default function EpubThumbnailClient({ url }: { url: string }) {
 
     return () => {
       isMounted = false
-      if (extractedUrl && extractedUrl.startsWith('blob:')) {
+      if (extractedUrl?.startsWith('blob:')) {
         URL.revokeObjectURL(extractedUrl)
       }
     }

@@ -12,6 +12,6 @@ const EpubViewerClient = dynamic(() => import('./EpubViewerClient'), {
   ),
 })
 
-export function EpubViewer({ url, fileName }: { url: string, fileName: string }) {
+export function EpubViewer({ url, fileName }: Readonly<{ url: string, fileName: string }>) {
   return <EpubViewerClient url={url} fileName={fileName} />
 }

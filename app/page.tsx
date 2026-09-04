@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
-import Image from 'next/image'
 import { UploadCloud, CheckCircle2, AlertCircle } from 'lucide-react'
 
 export default function HomePage() {
@@ -28,7 +27,7 @@ export default function HomePage() {
 
     const supabase = createClient()
     const fileExt = file.name.split('.').pop()
-    const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`
+    const fileName = `${crypto.randomUUID()}_${Date.now()}.${fileExt}`
     const filePath = `${fileName}`
 
     try {

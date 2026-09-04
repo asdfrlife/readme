@@ -9,11 +9,7 @@ export const metadata: Metadata = {
   description: 'An empty Next.js application',
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
       <body className={inter.className}>{children}</body>
