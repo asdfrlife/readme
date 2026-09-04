@@ -74,7 +74,7 @@ export function ClientBookList({
         >
           {file.name.toLowerCase().endsWith('.pdf') ? (
             <div className="w-full h-[200px] sm:w-[133px] sm:h-[252px] bg-white/5 flex items-center justify-center border-b sm:border-b-0 sm:border-r border-white/10 flex-shrink-0 relative overflow-hidden">
-              <Image src="/pdf-icon.png" alt="PDF" fill sizes="133px" className="object-cover p-8" />
+              <Image src="/pdf-icon.jpg" alt="PDF" fill sizes="133px" className="object-cover" />
             </div>
           ) : (
             <EpubThumbnail url={urls[file.name] || ''} />
