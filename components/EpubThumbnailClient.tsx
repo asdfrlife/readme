@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import ePub from 'epubjs'
+import Image from 'next/image'
 import { Image as ImageIcon } from 'lucide-react'
+
+// Cache to prevent re-extracting the EPUB cover every time the page changes
+const coverCache = new Map<string, string>()
 
 export default function EpubThumbnailClient({ url }: Readonly<{ url: string }>) {
   const [coverUrl, setCoverUrl] = useState<string | null>(null)
@@ -11,9 +15,16 @@ export default function EpubThumbnailClient({ url }: Readonly<{ url: string }>) 
 
   useEffect(() => {
     let isMounted = true
-    let extractedUrl: string | null = null
 
     const extractCover = async () => {
+      if (coverCache.has(url)) {
+        if (isMounted) {
+          setCoverUrl(coverCache.get(url)!)
+          setLoading(false)
+        }
+        return
+      }
+
       try {
         setLoading(true)
         const response = await fetch(url)
@@ -26,7 +37,7 @@ export default function EpubThumbnailClient({ url }: Readonly<{ url: string }>) 
         
         if (isMounted) {
           if (cover) {
-            extractedUrl = cover
+            coverCache.set(url, cover)
             setCoverUrl(cover)
           } else {
             setError(true)
@@ -46,9 +57,7 @@ export default function EpubThumbnailClient({ url }: Readonly<{ url: string }>) 
 
     return () => {
       isMounted = false
-      if (extractedUrl?.startsWith('blob:')) {
-        URL.revokeObjectURL(extractedUrl)
-      }
+      // Intentionally not revoking the blob URL so it remains cached in memory across page loads
     }
   }, [url])
 
@@ -66,13 +75,16 @@ export default function EpubThumbnailClient({ url }: Readonly<{ url: string }>) 
         </div>
       )}
       {!loading && coverUrl && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img 
+        <Image 
           src={coverUrl} 
           alt="Book Cover"
-          className="w-full h-full object-cover"
+          fill
+          sizes="133px"
+          className="object-cover"
+          unoptimized
         />
       )}
     </div>
   )
 }
+
