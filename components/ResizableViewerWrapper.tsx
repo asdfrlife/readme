@@ -84,9 +84,44 @@ export function ResizableViewerWrapper({ children, fileName }: Readonly<{ childr
         }
       `}</style>
 
-      {/* Left AI Chat Panel (Desktop) */}
-      <div className="hidden lg:flex lg:flex-1 lg:h-full lg:min-w-[300px] overflow-hidden flex-shrink-0">
-        <AiChatContainer bookTitle={displayName} />
+      {/* AI Chat Panel Wrapper */}
+      <div 
+        className={`
+          ${isMobileChatOpen ? 'fixed inset-0 z-50 flex flex-col justify-end' : 'hidden lg:flex'}
+          lg:static lg:flex lg:z-auto lg:justify-start
+          lg:flex-1 lg:h-full lg:min-w-[300px] overflow-hidden flex-shrink-0
+        `}
+      >
+        {/* Mobile Backdrop */}
+        {isMobileChatOpen && (
+          <div 
+            className="lg:hidden absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+            onClick={() => setIsMobileChatOpen(false)} 
+          />
+        )}
+        
+        {/* The Chat Panel */}
+        <div className={`
+          relative z-10 w-full flex flex-col overflow-hidden
+          lg:h-full lg:bg-transparent lg:rounded-none lg:shadow-none lg:border-none lg:animate-none lg:p-0
+          ${isMobileChatOpen ? 'h-[85vh] bg-[#121212] rounded-t-3xl shadow-2xl border-t border-white/10 animate-in slide-in-from-bottom-full duration-300 pt-4 pb-2 px-2' : 'h-full bg-transparent'}
+        `}>
+          {/* Mobile Close Button */}
+          {isMobileChatOpen && (
+            <div className="lg:hidden absolute top-3 right-4 z-10">
+              <button 
+                onClick={() => setIsMobileChatOpen(false)} 
+                className="p-2 bg-black/50 hover:bg-black rounded-full text-white/70 hover:text-white transition-colors border border-white/10"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          )}
+          
+          <div className="flex-1 overflow-hidden flex flex-col">
+            <AiChatContainer bookTitle={displayName} />
+          </div>
+        </div>
       </div>
 
       {/* Right Resizable Canvas */}
@@ -120,32 +155,6 @@ export function ResizableViewerWrapper({ children, fileName }: Readonly<{ childr
           <span className="text-sm font-medium">Ask a question about the book...</span>
         </button>
       </div>
-
-      {/* Mobile Chat Modal Sheet */}
-      {isMobileChatOpen && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-end lg:hidden">
-          {/* Backdrop */}
-          <div 
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
-            onClick={() => setIsMobileChatOpen(false)} 
-          />
-          
-          {/* Sheet */}
-          <div className="h-[85vh] bg-[#121212] rounded-t-3xl shadow-2xl flex flex-col overflow-hidden border-t border-white/10 relative animate-in slide-in-from-bottom-full duration-300">
-            <div className="absolute top-3 right-4 z-10">
-              <button 
-                onClick={() => setIsMobileChatOpen(false)} 
-                className="p-2 bg-black/50 hover:bg-black rounded-full text-white/70 hover:text-white transition-colors border border-white/10"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="flex-1 overflow-hidden pt-4 pb-2 px-2 flex flex-col">
-              <AiChatContainer bookTitle={displayName} />
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
