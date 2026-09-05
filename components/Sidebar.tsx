@@ -159,6 +159,7 @@ export function Sidebar() {
       // Ensure the title still has the correct extension for the viewer to parse
       const titleWithExt = finalTitle.endsWith(extension) ? finalTitle : `${finalTitle}${extension}`;
       
+      // eslint-disable-next-line react-hooks/purity -- False positive: this is inside an event handler, not during render
       const filePath = `${uploadUser.id}/${Date.now()}___${safeCategory}___${titleWithExt}`
       const url = `${supabaseUrl}/storage/v1/object/files/${filePath}`
 

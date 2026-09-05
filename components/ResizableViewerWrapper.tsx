@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect, useRef } from 'react'
+import { Bot, X } from 'lucide-react'
 
 import { AiChatContainer } from './AiChatContainer'
 
@@ -10,6 +11,7 @@ export function ResizableViewerWrapper({ children, fileName }: Readonly<{ childr
   // A4 paper proportion minimum (approx 700px for typical screens)
   const [width, setWidth] = useState(700)
   const [isResizing, setIsResizing] = useState(false)
+  const [isMobileChatOpen, setIsMobileChatOpen] = useState(false)
   
   const isResizingRef = useRef(false)
   const startXRef = useRef(0)
@@ -20,6 +22,16 @@ export function ResizableViewerWrapper({ children, fileName }: Readonly<{ childr
       localStorage.setItem('lastReadBook', fileName)
     }
   }, [fileName])
+
+  useEffect(() => {
+    const handleAskAi = () => {
+      if (window.innerWidth < 1024) {
+        setIsMobileChatOpen(true)
+      }
+    }
+    window.addEventListener('ask-ai', handleAskAi)
+    return () => window.removeEventListener('ask-ai', handleAskAi)
+  }, [])
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault()
@@ -64,7 +76,7 @@ export function ResizableViewerWrapper({ children, fileName }: Readonly<{ childr
   const { displayName } = parseBookFilename(fileName)
 
   return (
-    <div className="flex-1 w-full overflow-y-auto lg:overflow-hidden flex flex-col-reverse lg:flex-row relative gap-6 pb-6 lg:pb-0">
+    <div className="flex-1 w-full overflow-hidden flex flex-row relative h-full">
       <style>{`
         .resizable-panel { width: 100%; }
         @media (min-width: 1024px) {
@@ -72,14 +84,14 @@ export function ResizableViewerWrapper({ children, fileName }: Readonly<{ childr
         }
       `}</style>
 
-      {/* Left AI Chat Panel */}
-      <div className="w-full lg:flex-1 h-[500px] lg:h-full lg:min-w-[300px] overflow-hidden flex-shrink-0">
+      {/* Left AI Chat Panel (Desktop) */}
+      <div className="hidden lg:flex lg:flex-1 lg:h-full lg:min-w-[300px] overflow-hidden flex-shrink-0">
         <AiChatContainer bookTitle={displayName} />
       </div>
 
       {/* Right Resizable Canvas */}
       <div 
-        className="resizable-panel h-[70vh] min-h-[500px] lg:h-full relative flex-shrink-0 flex max-w-full"
+        className="resizable-panel h-full relative flex-shrink-0 flex max-w-full"
       >
         <div 
           onMouseDown={handleMouseDown}
@@ -97,6 +109,43 @@ export function ResizableViewerWrapper({ children, fileName }: Readonly<{ childr
           )}
         </div>
       </div>
+
+      {/* Mobile Chat Floating Button */}
+      <div className="lg:hidden absolute bottom-6 left-4 right-4 z-40">
+        <button 
+          onClick={() => setIsMobileChatOpen(true)}
+          className="w-full bg-[#121212]/90 backdrop-blur-md border border-white/20 hover:border-purple-500/50 rounded-xl px-4 py-3.5 text-white/60 text-left shadow-2xl flex items-center gap-3 transition-all active:scale-[0.98]"
+        >
+          <Bot className="w-5 h-5 text-purple-400" />
+          <span className="text-sm font-medium">Ask a question about the book...</span>
+        </button>
+      </div>
+
+      {/* Mobile Chat Modal Sheet */}
+      {isMobileChatOpen && (
+        <div className="fixed inset-0 z-50 flex flex-col justify-end lg:hidden">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+            onClick={() => setIsMobileChatOpen(false)} 
+          />
+          
+          {/* Sheet */}
+          <div className="h-[85vh] bg-[#121212] rounded-t-3xl shadow-2xl flex flex-col overflow-hidden border-t border-white/10 relative animate-in slide-in-from-bottom-full duration-300">
+            <div className="absolute top-3 right-4 z-10">
+              <button 
+                onClick={() => setIsMobileChatOpen(false)} 
+                className="p-2 bg-black/50 hover:bg-black rounded-full text-white/70 hover:text-white transition-colors border border-white/10"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden pt-4 pb-2 px-2 flex flex-col">
+              <AiChatContainer bookTitle={displayName} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

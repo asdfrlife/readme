@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import Link from 'next/link'
 import Image from 'next/image'
-import { FileText } from 'lucide-react'
+
 import { EpubThumbnail } from '@/components/EpubThumbnail'
 import { DeleteBookButton } from '@/components/DeleteBookButton'
 import { parseBookFilename } from '@/utils/bookFormat'
@@ -50,7 +50,7 @@ export function ClientBookList({
 
     window.addEventListener('book_uploaded', handleBookUploaded)
     return () => window.removeEventListener('book_uploaded', handleBookUploaded)
-  }, [])
+  }, [supabase])
 
   if (files.length === 0) {
     return (
