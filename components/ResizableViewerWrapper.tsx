@@ -148,7 +148,15 @@ export function ResizableViewerWrapper({ children, fileName }: Readonly<{ childr
       {/* Mobile Chat Floating Button */}
       <div className="lg:hidden absolute bottom-6 left-4 right-4 z-40">
         <button 
-          onClick={() => setIsMobileChatOpen(true)}
+          onClick={() => {
+            setIsMobileChatOpen(true)
+            setTimeout(() => {
+              const input = document.getElementById('chat-input') as HTMLInputElement
+              if (input) {
+                input.focus()
+              }
+            }, 300)
+          }}
           className="w-full bg-[#121212]/90 backdrop-blur-md border border-white/20 hover:border-purple-500/50 rounded-xl px-4 py-3.5 text-white/60 text-left shadow-2xl flex items-center gap-3 transition-all active:scale-[0.98]"
         >
           <Bot className="w-5 h-5 text-purple-400" />

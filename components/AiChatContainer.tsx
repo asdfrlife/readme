@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Send, Bot, MessageSquarePlus, History, X } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import { createClient } from '@/utils/supabase/client'
@@ -78,6 +78,12 @@ export function AiChatContainer({ bookTitle }: Readonly<{ bookTitle?: string }>)
       window.removeEventListener('ask-ai', handleAskAi as EventListener)
     }
   }, [])
+
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, isGenerating])
 
   async function fetchHistory() {
     const { data } = await supabase
@@ -265,7 +271,7 @@ export function AiChatContainer({ bookTitle }: Readonly<{ bookTitle?: string }>)
 
       {/* Chat Area */}
       <div 
-        className="flex-1 p-4 overflow-y-auto flex flex-col"
+        className="flex-1 p-4 overflow-y-auto flex flex-col scroll-smooth"
         onClick={() => {
           if (window.innerWidth < 768) {
             const input = document.getElementById('chat-input') as HTMLInputElement
@@ -315,6 +321,8 @@ export function AiChatContainer({ bookTitle }: Readonly<{ bookTitle?: string }>)
                 </div>
               </div>
             )}
+            
+            <div ref={messagesEndRef} className="h-1" />
           </div>
         )}
       </div>
