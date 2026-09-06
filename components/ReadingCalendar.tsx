@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/utils/supabase/client'
 
 export function ReadingCalendar() {
-  const [logs, setLogs] = useState<Record<string, boolean>>({})
+  const [logs, setLogs] = useState<Record<string, { isCompleted: boolean; minutes: number }>>({})
   const [isLoading, setIsLoading] = useState(true)
 
   const supabase = createClient()
@@ -39,7 +39,7 @@ export function ReadingCalendar() {
 
       const { data, error } = await supabase
         .from('daily_reading_logs')
-        .select('log_date, is_completed')
+        .select('log_date, is_completed, total_minutes')
         .eq('user_id', user.id)
         .gte('log_date', startDateStr)
         .lte('log_date', endDateStr)
@@ -47,9 +47,12 @@ export function ReadingCalendar() {
       if (error) {
         console.error('Error fetching logs:', error)
       } else if (mounted && data) {
-        const logsMap: Record<string, boolean> = {}
+        const logsMap: Record<string, { isCompleted: boolean; minutes: number }> = {}
         data.forEach(log => {
-          logsMap[log.log_date] = log.is_completed
+          logsMap[log.log_date] = { 
+            isCompleted: log.is_completed, 
+            minutes: log.total_minutes || 0 
+          }
         })
         setLogs(logsMap)
       }
@@ -120,16 +123,15 @@ export function ReadingCalendar() {
     return (new Date(d.getTime() - tzOffset)).toISOString().split('T')[0];
   }
 
-  // Count total completed
-  const totalCompleted = Object.values(logs).filter(Boolean).length
+  // Count total reading days
+  const totalCompleted = Object.keys(logs).length
 
   return (
     <div className="flex flex-col bg-[#0d1117] border border-[#30363d] rounded-lg p-5 w-full text-[#c9d1d9] font-sans text-xs overflow-hidden">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-medium">
-          {totalCompleted} contributions in the last year
+          {totalCompleted} active reading days in the last year
         </h2>
-        <div className="text-[#8b949e]">Contribution settings ▾</div>
       </div>
 
       <div className={`relative flex transition-opacity duration-200 ${isLoading ? 'opacity-50' : 'opacity-100'}`}>
@@ -169,13 +171,25 @@ export function ReadingCalendar() {
                   }
                   
                   const dateStr = toLocalISOString(day)
-                  const isCompleted = logs[dateStr] === true
+                  const log = logs[dateStr]
+                  const minutes = log?.minutes || 0
+                  
+                  let bgColor = 'bg-[#161b22]'
+                  if (minutes >= 60) {
+                    bgColor = 'bg-[#39d353]' // Bold
+                  } else if (minutes >= 30) {
+                    bgColor = 'bg-[#26a641]' // Medium
+                  } else if (minutes >= 20) {
+                    bgColor = 'bg-[#006d32]' // Medium-Low
+                  } else if (minutes > 0) {
+                    bgColor = 'bg-[#0e4429]' // Low
+                  }
                   
                   return (
                     <div 
                       key={dayIndex}
-                      title={`${isCompleted ? '1+ contributions' : 'No contributions'} on ${day.toDateString()}`}
-                      className={`w-[10px] h-[10px] rounded-[2px] ${isCompleted ? 'bg-[#39d353]' : 'bg-[#161b22]'} transition-colors hover:ring-1 hover:ring-white/50 cursor-default outline outline-1 outline-offset-[-1px] outline-white/5`}
+                      title={`${minutes} mins read on ${day.toDateString()}`}
+                      className={`w-[10px] h-[10px] rounded-[2px] ${bgColor} transition-colors hover:ring-1 hover:ring-white/50 cursor-default outline outline-1 outline-offset-[-1px] outline-white/5`}
                     />
                   )
                 })}
@@ -187,16 +201,16 @@ export function ReadingCalendar() {
 
       <div className="flex items-center justify-between mt-4 text-[#8b949e]">
         <div className="hover:text-[#58a6ff] cursor-pointer transition-colors">
-          Learn how we count contributions
+          Learn how we track reading goals
         </div>
         <div className="flex items-center gap-2">
           <span>Less</span>
           <div className="flex gap-[3px]">
-            <div className="w-[10px] h-[10px] rounded-[2px] bg-[#161b22] outline outline-1 outline-offset-[-1px] outline-white/5" />
-            <div className="w-[10px] h-[10px] rounded-[2px] bg-[#0e4429]" />
-            <div className="w-[10px] h-[10px] rounded-[2px] bg-[#006d32]" />
-            <div className="w-[10px] h-[10px] rounded-[2px] bg-[#26a641]" />
-            <div className="w-[10px] h-[10px] rounded-[2px] bg-[#39d353]" />
+            <div className="w-[10px] h-[10px] rounded-[2px] bg-[#161b22] outline outline-1 outline-offset-[-1px] outline-white/5" title="0 mins" />
+            <div className="w-[10px] h-[10px] rounded-[2px] bg-[#0e4429]" title="1-19 mins" />
+            <div className="w-[10px] h-[10px] rounded-[2px] bg-[#006d32]" title="20-29 mins" />
+            <div className="w-[10px] h-[10px] rounded-[2px] bg-[#26a641]" title="30-59 mins" />
+            <div className="w-[10px] h-[10px] rounded-[2px] bg-[#39d353]" title="60+ mins" />
           </div>
           <span>More</span>
         </div>
