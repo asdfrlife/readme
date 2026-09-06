@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { createClient } from '@/utils/supabase/client'
 import { Timer, X } from 'lucide-react'
 
 export function ReadingTimer() {
@@ -7,6 +8,7 @@ export function ReadingTimer() {
   const [minutesInput, setMinutesInput] = useState('30')
   const [timeLeft, setTimeLeft] = useState<number | null>(null)
   const [isRunning, setIsRunning] = useState(false)
+  const [sessionStartedAt, setSessionStartedAt] = useState<Date | null>(null)
 
   useEffect(() => {
     let interval: NodeJS.Timeout
@@ -18,23 +20,47 @@ export function ReadingTimer() {
       // False positive: we must synchronously reset isRunning when timer hits 0
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsRunning(false)
+
+      const recordSession = async () => {
+        if (sessionStartedAt) {
+          try {
+            const supabase = createClient()
+            const { data: { user } } = await supabase.auth.getUser()
+            if (user) {
+              await supabase.from('reading_sessions').insert({
+                user_id: user.id,
+                started_at: sessionStartedAt.toISOString(),
+                ended_at: new Date().toISOString()
+              })
+            }
+          } catch (err) {
+            console.error('Failed to record reading session', err)
+          }
+        }
+      }
+
+      // Record session without blocking
+      recordSession()
+
       // We use setTimeout to allow state to settle before alert blocks the thread
       setTimeout(() => alert("Time's up! Great reading session."), 10)
     }
     return () => clearInterval(interval)
-  }, [isRunning, timeLeft])
+  }, [isRunning, timeLeft, sessionStartedAt])
 
   const handleStart = () => {
     const mins = parseInt(minutesInput)
     if (isNaN(mins) || mins <= 0) return
     setTimeLeft(mins * 60)
     setIsRunning(true)
+    setSessionStartedAt(new Date())
     setIsOpen(false)
   }
 
   const handleCancel = () => {
     setTimeLeft(null)
     setIsRunning(false)
+    setSessionStartedAt(null)
     setIsOpen(false)
   }
 
