@@ -1,41 +1,38 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/utils/supabase/client'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 export function ReadingCalendar() {
-  const [currentDate, setCurrentDate] = useState(() => {
-    const now = new Date()
-    return new Date(now.getFullYear(), now.getMonth(), 1)
-  })
-  
   const [logs, setLogs] = useState<Record<string, boolean>>({})
   const [isLoading, setIsLoading] = useState(true)
 
   const supabase = createClient()
+
+  // Generate date range (last 365 days)
+  const dateRange = useMemo(() => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    
+    // We want 365 days ago (or a full year)
+    const startDate = new Date(today)
+    startDate.setDate(today.getDate() - 364)
+
+    return { startDate, endDate: today }
+  }, [])
 
   useEffect(() => {
     let mounted = true
     const fetchLogs = async () => {
       setIsLoading(true)
       
-      const year = currentDate.getFullYear()
-      const month = currentDate.getMonth()
-      
-      // Format dates for Supabase query (YYYY-MM-DD)
-      // Dates should be in local time to match what user sees
-      const startDate = new Date(year, month, 1)
-      const endDate = new Date(year, month + 1, 0)
-      
-      // We need local ISO-like strings (YYYY-MM-DD)
       const toLocalISOString = (d: Date) => {
-        const tzOffset = d.getTimezoneOffset() * 60000; // offset in milliseconds
+        const tzOffset = d.getTimezoneOffset() * 60000;
         return (new Date(d.getTime() - tzOffset)).toISOString().split('T')[0];
       }
 
-      const startDateStr = toLocalISOString(startDate)
-      const endDateStr = toLocalISOString(endDate)
+      const startDateStr = toLocalISOString(dateRange.startDate)
+      const endDateStr = toLocalISOString(dateRange.endDate)
       
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
@@ -64,109 +61,144 @@ export function ReadingCalendar() {
     return () => {
       mounted = false
     }
-  }, [currentDate, supabase])
+  }, [dateRange, supabase])
 
-  const handlePrevMonth = () => {
-    setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))
-  }
-
-  const handleNextMonth = () => {
-    setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))
-  }
-
-  const year = currentDate.getFullYear()
-  const month = currentDate.getMonth()
-  const daysInMonth = new Date(year, month + 1, 0).getDate()
-  const firstDayOfWeek = new Date(year, month, 1).getDay() // 0 = Sunday
-  
-  const today = new Date()
-  const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month
-  const todayDate = today.getDate()
-
-  const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-  ]
-
-  // Generate grid cells
-  const cells = []
-  // Empty cells for days before the 1st
-  for (let i = 0; i < firstDayOfWeek; i++) {
-    cells.push(<div key={`empty-${i}`} className="w-8 h-8 md:w-10 md:h-10" />)
-  }
-  
-  for (let day = 1; day <= daysInMonth; day++) {
-    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-    const isCompleted = logs[dateStr] === true
-    const isToday = isCurrentMonth && day === todayDate
+  // Build the grid data structure
+  const weeks = useMemo(() => {
+    const days: (Date | null)[] = []
     
-    let cellClasses = "w-8 h-8 md:w-10 md:h-10 rounded-md transition-colors flex items-center justify-center text-xs "
+    // Pad start of first week (Sunday = 0)
+    const startDayOfWeek = dateRange.startDate.getDay()
+    for (let i = 0; i < startDayOfWeek; i++) {
+      days.push(null)
+    }
     
-    if (isCompleted) {
-      cellClasses += "bg-purple-500 text-white font-medium shadow-[0_0_10px_rgba(168,85,247,0.4)]"
-    } else {
-      cellClasses += "bg-white/5 border border-white/10 text-white/40"
+    // Add all 365 days
+    const current = new Date(dateRange.startDate)
+    while (current <= dateRange.endDate) {
+      days.push(new Date(current))
+      current.setDate(current.getDate() + 1)
+    }
+    
+    // Pad end of last week
+    while (days.length % 7 !== 0) {
+      days.push(null)
     }
 
-    if (isToday) {
-      cellClasses += " ring-2 ring-white/60 ring-offset-2 ring-offset-[#121212]"
+    // Chunk into weeks (arrays of 7)
+    const weeksArr: (Date | null)[][] = []
+    for (let i = 0; i < days.length; i += 7) {
+      weeksArr.push(days.slice(i, i + 7))
     }
+    return weeksArr
+  }, [dateRange])
 
-    cells.push(
-      <div 
-        key={day} 
-        className={cellClasses}
-        title={`${monthNames[month]} ${day}, ${year}`}
-      >
-        {day}
-      </div>
-    )
+  const monthLabels = useMemo(() => {
+    const labels: { name: string, colIndex: number }[] = []
+    let currentMonth = -1
+    
+    weeks.forEach((week, index) => {
+      // Find the first valid day in the week to determine its month
+      const firstValidDay = week.find(day => day !== null)
+      if (firstValidDay) {
+        const month = firstValidDay.getMonth()
+        if (month !== currentMonth) {
+          // If the month starts, add a label for this column
+          labels.push({ 
+            name: firstValidDay.toLocaleString('default', { month: 'short' }), 
+            colIndex: index 
+          })
+          currentMonth = month
+        }
+      }
+    })
+    return labels
+  }, [weeks])
+
+  const toLocalISOString = (d: Date) => {
+    const tzOffset = d.getTimezoneOffset() * 60000;
+    return (new Date(d.getTime() - tzOffset)).toISOString().split('T')[0];
   }
 
-  const dayLabels = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
+  // Count total completed
+  const totalCompleted = Object.values(logs).filter(Boolean).length
 
   return (
-    <div className="flex flex-col items-center bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6 w-full max-w-md">
-      <div className="flex items-center justify-between w-full mb-6">
-        <button 
-          onClick={handlePrevMonth}
-          className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white/70 hover:text-white"
-          aria-label="Previous Month"
-        >
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-        <h2 className="text-xl font-bold text-white tracking-wide">
-          {monthNames[month]} {year}
+    <div className="flex flex-col bg-[#0d1117] border border-[#30363d] rounded-lg p-5 w-full text-[#c9d1d9] font-sans text-xs overflow-hidden">
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-sm font-medium">
+          {totalCompleted} contributions in the last year
         </h2>
-        <button 
-          onClick={handleNextMonth}
-          className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white/70 hover:text-white"
-          aria-label="Next Month"
-        >
-          <ChevronRight className="w-5 h-5" />
-        </button>
+        <div className="text-[#8b949e]">Contribution settings ▾</div>
       </div>
 
-      <div className="grid grid-cols-7 gap-2 w-full justify-items-center mb-2">
-        {dayLabels.map(label => (
-          <div key={label} className="text-white/40 text-xs font-semibold w-8 md:w-10 text-center">
-            {label}
-          </div>
-        ))}
-      </div>
-
-      <div className={`grid grid-cols-7 gap-2 w-full justify-items-center transition-opacity duration-200 ${isLoading ? 'opacity-50' : 'opacity-100'}`}>
-        {cells}
-      </div>
-      
-      <div className="flex items-center gap-4 mt-6 text-xs text-white/50 w-full justify-center">
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm bg-white/5 border border-white/10" />
-          <span>No reading</span>
+      <div className={`relative flex transition-opacity duration-200 ${isLoading ? 'opacity-50' : 'opacity-100'}`}>
+        {/* Day labels (Mon, Wed, Fri) */}
+        <div className="flex flex-col gap-[3px] pt-[22px] pr-2 w-8 flex-shrink-0 text-[#8b949e]">
+          <div className="h-[10px]" /> {/* Sun */}
+          <div className="h-[10px] leading-[10px]">Mon</div> {/* Mon */}
+          <div className="h-[10px]" /> {/* Tue */}
+          <div className="h-[10px] leading-[10px]">Wed</div> {/* Wed */}
+          <div className="h-[10px]" /> {/* Thu */}
+          <div className="h-[10px] leading-[10px]">Fri</div> {/* Fri */}
+          <div className="h-[10px]" /> {/* Sat */}
         </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm bg-purple-500 shadow-[0_0_5px_rgba(168,85,247,0.4)]" />
-          <span>10+ mins</span>
+
+        {/* Grid and Month labels container */}
+        <div className="flex flex-col w-full overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-[#30363d] scrollbar-track-transparent">
+          {/* Month labels */}
+          <div className="flex relative h-5 text-[#8b949e] mb-1">
+            {monthLabels.map(label => (
+              <div 
+                key={label.colIndex + label.name}
+                className="absolute"
+                style={{ left: `${label.colIndex * 13}px` }}
+              >
+                {label.name}
+              </div>
+            ))}
+          </div>
+
+          {/* Grid */}
+          <div className="flex gap-[3px]">
+            {weeks.map((week, weekIndex) => (
+              <div key={weekIndex} className="flex flex-col gap-[3px]">
+                {week.map((day, dayIndex) => {
+                  if (!day) {
+                    return <div key={dayIndex} className="w-[10px] h-[10px] rounded-[2px] bg-transparent" />
+                  }
+                  
+                  const dateStr = toLocalISOString(day)
+                  const isCompleted = logs[dateStr] === true
+                  
+                  return (
+                    <div 
+                      key={dayIndex}
+                      title={`${isCompleted ? '1+ contributions' : 'No contributions'} on ${day.toDateString()}`}
+                      className={`w-[10px] h-[10px] rounded-[2px] ${isCompleted ? 'bg-[#39d353]' : 'bg-[#161b22]'} transition-colors hover:ring-1 hover:ring-white/50 cursor-default outline outline-1 outline-offset-[-1px] outline-white/5`}
+                    />
+                  )
+                })}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between mt-4 text-[#8b949e]">
+        <div className="hover:text-[#58a6ff] cursor-pointer transition-colors">
+          Learn how we count contributions
+        </div>
+        <div className="flex items-center gap-2">
+          <span>Less</span>
+          <div className="flex gap-[3px]">
+            <div className="w-[10px] h-[10px] rounded-[2px] bg-[#161b22] outline outline-1 outline-offset-[-1px] outline-white/5" />
+            <div className="w-[10px] h-[10px] rounded-[2px] bg-[#0e4429]" />
+            <div className="w-[10px] h-[10px] rounded-[2px] bg-[#006d32]" />
+            <div className="w-[10px] h-[10px] rounded-[2px] bg-[#26a641]" />
+            <div className="w-[10px] h-[10px] rounded-[2px] bg-[#39d353]" />
+          </div>
+          <span>More</span>
         </div>
       </div>
     </div>
