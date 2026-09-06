@@ -96,7 +96,7 @@ export function ClientBookList({
                   {/* Movie-poster style container */}
                   <div className="relative w-full aspect-[2/3] rounded-xl overflow-hidden border border-white/10 group-hover:border-purple-500/50 transition-all duration-300 shadow-sm group-hover:shadow-purple-500/20 bg-white/5">
                     {file.name.toLowerCase().endsWith('.pdf') ? (
-                      <Image src="/pdf-icon.jpg" alt="PDF" fill sizes="(max-width: 768px) 50vw, 20vw" className="object-cover" />
+                      <Image src="/pdf-icon.jpg" alt="PDF" fill priority sizes="(max-width: 768px) 50vw, 20vw" className="object-cover" />
                     ) : (
                       <EpubThumbnail url={urls[file.name] || ''} fileName={file.name} />
                     )}
