@@ -44,8 +44,8 @@ export default function EpubViewerClient({ url, fileName }: Readonly<{ url: stri
           try {
             const css = `
               body { 
-                color: #1a1a1a !important; 
-                background-color: #ffffff !important; 
+                color: #2c241b !important; 
+                background-color: #f4ecd8 !important; 
                 padding-left: 8% !important;
                 padding-right: 8% !important;
                 box-sizing: border-box !important;
@@ -149,7 +149,7 @@ export default function EpubViewerClient({ url, fileName }: Readonly<{ url: stri
   }
 
   return (
-    <div className="flex-1 w-full h-full bg-white relative border border-white/10 rounded-2xl overflow-hidden group flex">
+    <div className="flex-1 w-full h-full bg-[#f4ecd8] relative border border-white/10 rounded-2xl overflow-hidden group flex">
       <div className="flex-1 h-full py-8 relative">
         {errorMsg && (
           <div className="absolute inset-0 flex items-center justify-center bg-red-500/10 z-50">

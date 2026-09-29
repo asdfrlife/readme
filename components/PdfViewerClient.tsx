@@ -119,7 +119,7 @@ export default function PdfViewerClient({ url, fileName }: Readonly<{ url: strin
   const pageWidth = typeof window !== 'undefined' ? Math.min(window.innerWidth - padding, 800) : 800;
 
   return (
-    <div className="flex-1 w-full h-full bg-[#f4f4f5] relative border border-white/10 rounded-2xl overflow-hidden group flex">
+    <div className="flex-1 w-full h-full bg-[#f4ecd8] relative border border-white/10 rounded-2xl overflow-hidden group flex">
       <div 
         ref={containerRef}
         className="flex-1 h-full py-8 relative overflow-y-auto overflow-x-hidden flex flex-col items-center custom-scrollbar"
@@ -192,6 +192,9 @@ export default function PdfViewerClient({ url, fileName }: Readonly<{ url: strin
 
       
       <style>{`
+        .react-pdf__Page {
+          filter: sepia(0.5) brightness(0.95) contrast(0.95);
+        }
         .custom-scrollbar::-webkit-scrollbar {
           width: 8px;
         }
