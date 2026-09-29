@@ -54,8 +54,8 @@ export default function ApiKeyPage() {
         if (!res.ok) throw new Error(data.error || 'Failed to connect to Google')
 
         const newModel = {
-          id: 'gemini-3.1-flash-lite',
-          name: 'Gemini 3.1 Flash Lite',
+          id: 'gemini-3.6-flash',
+          name: 'Gemini 3.6 Flash',
           key: apiKey,
           provider: 'google',
           addedAt: new Date().toISOString()
@@ -149,7 +149,7 @@ export default function ApiKeyPage() {
                   onChange={(e) => setProvider(e.target.value as 'google' | 'openrouter')}
                   className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-3 text-white appearance-none focus:outline-none focus:border-purple-500/50 transition-colors cursor-pointer"
                 >
-                  <option value="google" className="bg-[#1a1a1a]">Google-Gemini 3.1 Flash Lite</option>
+                  <option value="google" className="bg-[#1a1a1a]">Google-Gemini 3.6 Flash</option>
                   <option value="openrouter" className="bg-[#1a1a1a]">OpenRouter (All Free Models)</option>
                 </select>
                 <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-white/50">
