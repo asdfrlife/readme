@@ -64,6 +64,15 @@ export function ClientBookList({
     return () => window.removeEventListener('book_uploaded', handleBookUploaded)
   }, [supabase])
 
+  useEffect(() => {
+    const handleBookDeleted = (e: Event) => {
+      const customEvent = e as CustomEvent<string>
+      setFiles(prev => prev.filter(f => f.name !== customEvent.detail))
+    }
+    window.addEventListener('book_deleted', handleBookDeleted)
+    return () => window.removeEventListener('book_deleted', handleBookDeleted)
+  }, [])
+
   if (files.length === 0) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center">
@@ -118,7 +127,7 @@ export function ClientBookList({
                     )}
                     {/* Delete button overlay on hover */}
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                    <div className="absolute top-2 right-2 pointer-events-auto">
+                    <div className="absolute bottom-2 right-2 pointer-events-auto">
                       <DeleteBookButton fileName={file.name} />
                     </div>
                   </div>

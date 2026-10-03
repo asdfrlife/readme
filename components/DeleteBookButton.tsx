@@ -47,13 +47,7 @@ export function DeleteBookButton({ fileName }: Readonly<{ fileName: string }>) {
           localStorage.removeItem('lastReadBook')
         }
         
-        // Instantly hide the parent link container without a full page rebuild
-        if (buttonRef.current) {
-          const linkContainer = buttonRef.current.closest('a')
-          if (linkContainer) {
-            linkContainer.style.display = 'none'
-          }
-        }
+        window.dispatchEvent(new CustomEvent('book_deleted', { detail: fileName }))
       }
     } catch (err) {
       console.error('Unexpected error:', err)
@@ -69,7 +63,7 @@ export function DeleteBookButton({ fileName }: Readonly<{ fileName: string }>) {
         ref={buttonRef}
         onClick={handleDeleteClick}
         disabled={isDeleting}
-        className="p-2 bg-red-500/60 hover:bg-red-500 text-white rounded-full transition-all duration-200 opacity-80 hover:opacity-100 disabled:opacity-50 z-10 flex items-center justify-center border border-transparent shadow-md backdrop-blur-sm"
+        className="p-2 bg-red-500/80 hover:bg-red-500 text-white rounded-full transition-all duration-200 opacity-100 md:opacity-0 group-hover:opacity-100 disabled:opacity-50 z-10 flex items-center justify-center border border-transparent shadow-md backdrop-blur-sm"
         title="Delete Book"
       >
         <Trash2 className="w-4 h-4 transition-transform hover:scale-110" />

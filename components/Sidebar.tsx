@@ -464,43 +464,47 @@ export function Sidebar() {
               {['Fiction', 'Non-Fiction', 'Sci-Fi', 'Biography', 'Fantasy', 'Romance', 'Self-Help'].map(cat => (
                 <button
                   key={cat}
-                  onClick={() => performUpload(cat)}
-                  className="px-4 py-2 rounded-xl border border-white/20 hover:border-purple-500 hover:bg-purple-500/20 text-white text-sm transition-all"
+                  onClick={() => setCustomCategory(cat)}
+                  className={`px-4 py-2 rounded-xl border text-sm transition-all ${
+                    customCategory === cat 
+                      ? 'border-purple-500 bg-purple-500/20 text-white' 
+                      : 'border-white/20 hover:border-purple-500 hover:bg-purple-500/20 text-white/70 hover:text-white'
+                  }`}
                 >
                   {cat}
                 </button>
               ))}
             </div>
 
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2 mb-8">
               <label className="text-sm text-white/80 font-medium">Or enter a custom category:</label>
-              <div className="flex gap-2">
-                <input 
-                  type="text" 
-                  value={customCategory}
-                  onChange={e => setCustomCategory(e.target.value)}
-                  placeholder="e.g. Cookbooks"
-                  className="flex-1 bg-black border border-white/20 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-purple-500"
-                />
-                <button
-                  onClick={() => performUpload(customCategory)}
-                  disabled={!customCategory.trim()}
-                  className="px-4 py-2 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white rounded-xl font-medium transition-colors"
-                >
-                  Upload
-                </button>
-              </div>
+              <input 
+                type="text" 
+                value={customCategory}
+                onChange={e => setCustomCategory(e.target.value)}
+                placeholder="e.g. Cookbooks"
+                className="w-full bg-black border border-white/20 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-purple-500"
+              />
             </div>
             
-            <button 
-              onClick={() => {
-                setPendingUploadFile(null)
-                if (fileInputRef.current) fileInputRef.current.value = ''
-              }}
-              className="mt-6 text-white/50 hover:text-white transition-colors text-sm self-center"
-            >
-              Cancel
-            </button>
+            <div className="flex flex-col gap-4 mt-auto">
+              <button
+                onClick={() => performUpload(customCategory)}
+                disabled={!customCategory.trim() || !customTitle.trim()}
+                className="w-full py-3 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white rounded-xl font-bold transition-colors shadow-lg shadow-purple-500/20"
+              >
+                Upload Book
+              </button>
+              <button 
+                onClick={() => {
+                  setPendingUploadFile(null)
+                  if (fileInputRef.current) fileInputRef.current.value = ''
+                }}
+                className="text-white/50 hover:text-white transition-colors text-sm self-center"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
