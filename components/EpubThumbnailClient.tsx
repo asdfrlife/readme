@@ -8,12 +8,15 @@ import { Image as ImageIcon } from 'lucide-react'
 // Cache to prevent re-extracting the EPUB cover every time the page changes
 const coverCache = new Map<string, string>()
 
-export default function EpubThumbnailClient({ url, fileName }: Readonly<{ url: string, fileName: string }>) {
-  const [coverUrl, setCoverUrl] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
+export default function EpubThumbnailClient({ url, fileName, initialCoverUrl }: Readonly<{ url: string, fileName: string, initialCoverUrl?: string }>) {
+  const [coverUrl, setCoverUrl] = useState<string | null>(initialCoverUrl || null)
+  const [loading, setLoading] = useState(!initialCoverUrl)
   const [error, setError] = useState(false)
 
   useEffect(() => {
+    // If we already have the cover URL from the server/storage, skip extraction
+    if (initialCoverUrl) return
+
     let isMounted = true
 
     const extractCover = async () => {
@@ -60,7 +63,7 @@ export default function EpubThumbnailClient({ url, fileName }: Readonly<{ url: s
       isMounted = false
       // Intentionally not revoking the blob URL so it remains cached in memory across page loads
     }
-  }, [url, fileName])
+  }, [url, fileName, initialCoverUrl])
 
   return (
     <div className="w-full h-full bg-white/5 flex flex-col items-center justify-center overflow-hidden relative">

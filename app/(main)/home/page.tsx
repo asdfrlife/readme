@@ -18,14 +18,26 @@ export default async function NewHomePage() {
     
     // Filter out standard placeholder files (like .emptyFolderPlaceholder) if they exist
     epubFiles = files ? files.filter(f => f.name.toLowerCase().endsWith('.epub') || f.name.toLowerCase().endsWith('.pdf')) : []
+    const allFileNames = new Set(files ? files.map(f => f.name) : [])
 
     if (epubFiles.length > 0) {
-      const paths = epubFiles.map(f => `${user.id}/${f.name}`)
-      const { data: urls } = await supabase.storage.from('files').createSignedUrls(paths, 3600)
+      const pathsToSign: string[] = []
+      
+      epubFiles.forEach(f => {
+        pathsToSign.push(`${user.id}/${f.name}`)
+        if (allFileNames.has(`${f.name}.jpg`)) {
+          pathsToSign.push(`${user.id}/${f.name}.jpg`)
+        }
+      })
+
+      const { data: urls } = await supabase.storage.from('files').createSignedUrls(pathsToSign, 3600)
       
       if (urls) {
         urls.forEach((urlObj, idx) => {
-          signedUrls[epubFiles[idx].name] = urlObj.signedUrl || ''
+          const fileName = pathsToSign[idx].split('/').pop()
+          if (fileName) {
+            signedUrls[fileName] = urlObj.signedUrl || ''
+          }
         })
       }
     }

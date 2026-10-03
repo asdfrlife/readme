@@ -64,6 +64,8 @@ export function Sidebar() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [pendingUploadFile, setPendingUploadFile] = useState<File | null>(null)
+  const [previewCoverUrl, setPreviewCoverUrl] = useState<string | null>(null)
+  const [previewCoverBlob, setPreviewCoverBlob] = useState<Blob | null>(null)
   const [customCategory, setCustomCategory] = useState('')
   const [customTitle, setCustomTitle] = useState('')
   const [uploadProgress, setUploadProgress] = useState(0)
@@ -95,17 +97,42 @@ export function Sidebar() {
     return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file || !uploadUser) return
     setPendingUploadFile(file)
     setCustomTitle(cleanFileName(file.name))
+    setPreviewCoverUrl(null)
+    setPreviewCoverBlob(null)
+
+    if (file.name.toLowerCase().endsWith('.epub')) {
+      try {
+        const ePub = (await import('epubjs')).default
+        const buffer = await file.arrayBuffer()
+        const book = ePub(buffer)
+        await book.ready
+        const coverUrl = await book.coverUrl()
+        
+        if (coverUrl) {
+          setPreviewCoverUrl(coverUrl)
+          const res = await fetch(coverUrl)
+          const blob = await res.blob()
+          setPreviewCoverBlob(blob)
+        }
+      } catch (err) {
+        console.error("Failed to extract cover preview:", err)
+      }
+    }
   }
 
   const performUpload = async (category: string) => {
     if (!pendingUploadFile || !uploadUser) return
     const file = pendingUploadFile
+    const coverBlob = previewCoverBlob
+    
     setPendingUploadFile(null)
+    setPreviewCoverUrl(null)
+    setPreviewCoverBlob(null)
 
     setIsUploading(true)
     setUploadProgress(0)
@@ -149,8 +176,23 @@ export function Sidebar() {
       xhr.setRequestHeader('Cache-Control', '3600')
       xhr.setRequestHeader('Content-Type', file.type || (file.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'application/epub+zip'))
 
-      xhr.onload = () => {
+      xhr.onload = async () => {
         if (xhr.status >= 200 && xhr.status < 300) {
+          if (coverBlob) {
+            try {
+              const supabaseClient = createClient()
+              await supabaseClient.storage
+                .from('files')
+                .upload(`${filePath}.jpg`, coverBlob, {
+                  contentType: coverBlob.type || 'image/jpeg',
+                  cacheControl: '3600',
+                  upsert: true
+                })
+            } catch (coverErr) {
+              console.error('Failed to upload cover:', coverErr)
+            }
+          }
+
           setUploadProgress(100)
           setUploadBytes(file.size)
           setTimeout(() => {
@@ -395,6 +437,16 @@ export function Sidebar() {
           <div className="bg-[#1a1a1a] border border-white/10 p-8 rounded-2xl flex flex-col max-w-md w-full mx-4 shadow-2xl">
             <h2 className="text-xl font-bold text-white mb-2">Import Book</h2>
             <p className="text-white/60 text-sm mb-6">Review the title and select a category for this book.</p>
+            
+            {previewCoverUrl && (
+              <div className="flex justify-center mb-6">
+                <img 
+                  src={previewCoverUrl} 
+                  alt="Cover Preview" 
+                  className="h-40 w-auto object-contain rounded-xl shadow-lg border border-white/10" 
+                />
+              </div>
+            )}
             
             <div className="flex flex-col gap-2 mb-6">
               <label className="text-sm text-white/80 font-medium">Book Title</label>

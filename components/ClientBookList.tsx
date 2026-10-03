@@ -32,15 +32,27 @@ export function ClientBookList({
         .list(user.id)
       
       const newEpubFiles = rawFiles ? rawFiles.filter(f => f.name.toLowerCase().endsWith('.epub') || f.name.toLowerCase().endsWith('.pdf')) : []
+      const allFileNames = new Set(rawFiles ? rawFiles.map(f => f.name) : [])
 
       if (newEpubFiles.length > 0) {
-        const paths = newEpubFiles.map(f => `${user.id}/${f.name}`)
-        const { data: urlData } = await supabase.storage.from('files').createSignedUrls(paths, 3600)
+        const pathsToSign: string[] = []
+        
+        newEpubFiles.forEach(f => {
+          pathsToSign.push(`${user.id}/${f.name}`)
+          if (allFileNames.has(`${f.name}.jpg`)) {
+            pathsToSign.push(`${user.id}/${f.name}.jpg`)
+          }
+        })
+
+        const { data: urlData } = await supabase.storage.from('files').createSignedUrls(pathsToSign, 3600)
         
         const newUrls: Record<string, string> = {}
         if (urlData) {
           urlData.forEach((urlObj, idx) => {
-            newUrls[newEpubFiles[idx].name] = urlObj.signedUrl || ''
+            const fileName = pathsToSign[idx].split('/').pop()
+            if (fileName) {
+              newUrls[fileName] = urlObj.signedUrl || ''
+            }
           })
         }
         setUrls(newUrls)
@@ -98,7 +110,11 @@ export function ClientBookList({
                     {file.name.toLowerCase().endsWith('.pdf') ? (
                       <Image src="/pdf-icon.jpg" alt="PDF" fill priority sizes="(max-width: 768px) 50vw, 20vw" className="object-cover" />
                     ) : (
-                      <EpubThumbnail url={urls[file.name] || ''} fileName={file.name} />
+                      <EpubThumbnail 
+                        url={urls[file.name] || ''} 
+                        fileName={file.name} 
+                        coverUrl={urls[`${file.name}.jpg`]} 
+                      />
                     )}
                     {/* Delete button overlay on hover */}
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
