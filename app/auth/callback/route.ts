@@ -10,43 +10,26 @@ export async function GET(request: Request) {
   // if "next" is in param, use it as the redirect URL
   const next = searchParams.get('next') ?? '/'
 
-  // If the user cancelled the OAuth flow or there's an error, redirect back to signup
+  // If the user cancelled the OAuth flow or there's an error, redirect back to signin
   if (errorParam || errorDescription) {
-    return NextResponse.redirect(`${origin}/signup?error=${encodeURIComponent(errorDescription || 'Authentication was cancelled')}`)
+    // Supabase returns "Email link is invalid or has expired" if already verified.
+    const message = errorDescription?.includes('expired') 
+      ? 'Email link is invalid or has expired. If you already verified, please sign in.' 
+      : errorDescription || 'Authentication was cancelled';
+    return NextResponse.redirect(`${origin}/signin?error=${encodeURIComponent(message)}`)
   }
 
   if (code) {
     const supabase = await createClient()
-    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+    const { error } = await supabase.auth.exchangeCodeForSession(code)
     
-    if (!error && data?.user) {
-      const user = data.user
-      let redirectPath = next
-
-      const { data: profile } = await supabase
-        .from('profile')
-        .select('id')
-        .eq('id', user.id)
-        .maybeSingle()
-
-      const hasProfile = !!profile
-
-      // If they clicked "Sign in with Google" but have no profile, they haven't signed up
-      if (redirectPath === '/home' && !hasProfile) {
-        // Sign them out so they aren't logged in
-        await supabase.auth.signOut()
-        return NextResponse.redirect(`${origin}/signin?error=${encodeURIComponent('Account does not exist. Please sign up first.')}`)
-      }
-
-      // If they clicked "Sign up with Google" but already have a profile, route to home
-      if (redirectPath === '/profile' && hasProfile) {
-        redirectPath = '/home'
-      }
-
-      return NextResponse.redirect(`${origin}${redirectPath}`)
+    if (!error) {
+      return NextResponse.redirect(`${origin}${next}`)
+    } else {
+      return NextResponse.redirect(`${origin}/signin?error=${encodeURIComponent(error.message)}`)
     }
   }
 
-  // return the user to signup page if no code is present
-  return NextResponse.redirect(`${origin}/signup?error=Authentication failed or was cancelled`)
+  // return the user to signin page if no code is present
+  return NextResponse.redirect(`${origin}/signin?error=Authentication failed or was cancelled`)
 }

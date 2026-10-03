@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import {
@@ -23,9 +22,6 @@ export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const pathname = usePathname()
   const [supabase] = useState(() => createClient())
-
-  const [profile, setProfile] = useState<{ name: string; username: string } | null>(null)
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
 
   // Mobile Menu State
   const [isMobileOpen, setIsMobileOpen] = useState(false)
@@ -71,7 +67,7 @@ export function Sidebar() {
   const [customCategory, setCustomCategory] = useState('')
   const [customTitle, setCustomTitle] = useState('')
   const [uploadProgress, setUploadProgress] = useState(0)
-  const [uploadUser, setUploadUser] = useState<{ id: string } | null>(null)
+  const [uploadUser, setUploadUser] = useState<{ id: string, email?: string } | null>(null)
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -80,33 +76,6 @@ export function Sidebar() {
         if (authError || !user) return
 
         setUploadUser(user)
-
-        const { data: profileData } = await supabase
-          .from('profile')
-          .select('name, username')
-          .eq('id', user.id)
-          .single()
-
-        if (profileData) {
-          setProfile(profileData)
-        }
-
-        const { data: files } = await supabase.storage
-          .from('ppicture')
-          .list(user.id)
-
-        if (files && files.length > 0) {
-          const profilePic = files.find(f => f.name.startsWith('profile.'))
-          if (profilePic) {
-            const { data: urlData } = await supabase.storage
-              .from('ppicture')
-              .createSignedUrl(`${user.id}/${profilePic.name}`, 60 * 60)
-
-            if (urlData) {
-              setAvatarUrl(urlData.signedUrl)
-            }
-          }
-        }
       } catch (err) {
         console.error('Error fetching sidebar profile:', err)
       }
@@ -287,19 +256,17 @@ export function Sidebar() {
             <span className="ml-3 font-medium pr-4">Import Book/PDF</span>
           </button>
 
-          {/* Account Profile (Mobile) */}
-          <Link
-            href="/account"
-            onClick={() => setIsMobileOpen(false)}
-            className="flex items-center p-3 rounded-xl transition-all duration-200 group text-white/80 hover:text-white hover:bg-white/10 w-full text-left"
+          {/* Sign Out (Mobile) */}
+          <button
+            onClick={async () => {
+              await supabase.auth.signOut()
+              window.location.href = '/signin'
+            }}
+            className="flex items-center p-3 rounded-xl transition-all duration-200 group text-white/80 hover:text-red-300 hover:bg-red-500/10 w-full text-left"
           >
-            {avatarUrl ? (
-              <Image src={avatarUrl} alt="Avatar" width={20} height={20} className="w-5 h-5 rounded-full object-cover" unoptimized />
-            ) : (
-              <User className="w-5 h-5 flex-shrink-0" />
-            )}
-            <span className="ml-3 font-medium pr-4">Profile</span>
-          </Link>
+            <User className="w-5 h-5 flex-shrink-0" />
+            <span className="ml-3 font-medium pr-4">Sign Out</span>
+          </button>
         </div>
       </div>
 
@@ -376,31 +343,30 @@ export function Sidebar() {
           </div>
         </nav>
 
-        {/* Account Section at the Bottom (Desktop) */}
+        {/* Sign Out Section at the Bottom (Desktop) */}
         <div className="p-3 border-t border-white/10">
-          <Link
-            href="/account"
+          <button
+            onClick={async () => {
+              await supabase.auth.signOut()
+              window.location.href = '/signin'
+            }}
             className="flex items-center w-full p-2 hover:bg-white/10 rounded-xl transition-colors group"
           >
-            <div className="relative w-10 h-10 rounded-full bg-purple-500/30 border border-purple-500/50 flex-shrink-0 overflow-hidden flex items-center justify-center">
-              {avatarUrl ? (
-                <Image src={avatarUrl} alt="Avatar" fill sizes="40px" className="object-cover" unoptimized />
-              ) : (
-                <User className="w-5 h-5 text-purple-300" />
-              )}
+            <div className="relative w-10 h-10 rounded-full bg-purple-500/30 border border-purple-500/50 flex-shrink-0 overflow-hidden flex items-center justify-center group-hover:bg-red-500/20 group-hover:border-red-500/50 transition-colors">
+              <User className="w-5 h-5 text-purple-300 group-hover:text-red-400 transition-colors" />
             </div>
 
             {!isCollapsed && (
-              <div className="ml-3 flex-1 overflow-hidden">
-                <p className="text-sm font-semibold text-white truncate">
-                  {profile?.name || 'Account'}
+              <div className="ml-3 flex-1 overflow-hidden text-left">
+                <p className="text-sm font-semibold text-white truncate group-hover:text-red-400 transition-colors">
+                  Sign Out
                 </p>
                 <p className="text-xs text-white/50 truncate">
-                  {profile?.username ? `@${profile.username}` : 'View profile'}
+                  {uploadUser?.email || 'Logged In'}
                 </p>
               </div>
             )}
-          </Link>
+          </button>
         </div>
       </aside>
 

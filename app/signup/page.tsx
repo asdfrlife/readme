@@ -84,22 +84,8 @@ export default function SignUpPage() {
       return
     }
 
-    // Check if Supabase auto-linked this to an existing account that already has a profile
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      const { data: existingProfile } = await supabase
-        .from('profile')
-        .select('id')
-        .eq('id', user.id)
-        .maybeSingle()
-
-      if (existingProfile) {
-        router.push('/home')
-        return
-      }
-    }
-
-    router.push('/profile')
+    // Route directly to home after signup
+    router.push('/home')
   }
 
   const handleGoogleSignUp = async () => {
@@ -107,7 +93,7 @@ export default function SignUpPage() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/profile`,
+        redirectTo: `${window.location.origin}/auth/callback?next=/home`,
       },
     })
 
