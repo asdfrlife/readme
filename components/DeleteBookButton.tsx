@@ -69,10 +69,10 @@ export function DeleteBookButton({ fileName }: Readonly<{ fileName: string }>) {
         ref={buttonRef}
         onClick={handleDeleteClick}
         disabled={isDeleting}
-        className="absolute bottom-4 right-4 p-3 bg-red-500/10 hover:bg-red-500/30 text-red-500 hover:text-red-400 rounded-full transition-all duration-200 opacity-100 md:opacity-0 group-hover:opacity-100 disabled:opacity-50 z-10 flex items-center justify-center border border-transparent hover:border-red-500/30 shadow-md backdrop-blur-sm"
+        className="p-2 bg-red-500/60 hover:bg-red-500 text-white rounded-full transition-all duration-200 opacity-80 hover:opacity-100 disabled:opacity-50 z-10 flex items-center justify-center border border-transparent shadow-md backdrop-blur-sm"
         title="Delete Book"
       >
-        <Trash2 className="w-5 h-5 transition-transform hover:scale-110" />
+        <Trash2 className="w-4 h-4 transition-transform hover:scale-110" />
       </button>
 
       {showConfirm && (
