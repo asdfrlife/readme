@@ -152,10 +152,13 @@ export default function PdfViewerClient({ url, fileName }: Readonly<{ url: strin
         {/* Ask AI Tooltip Overlay */}
         {tooltip && (
           <div 
-            className={`absolute z-50 pointer-events-auto flex items-center gap-2 shadow-2xl ${
+            className={`absolute z-50 pointer-events-auto flex items-center gap-2 shadow-2xl whitespace-nowrap ${
               tooltip.isMobile ? 'mt-2 ml-2' : '-translate-y-full pb-1'
             }`}
-            style={{ left: tooltip.x, top: tooltip.y }}
+            style={{ 
+              left: `clamp(10px, ${tooltip.x}px, calc(100% - 220px))`, 
+              top: tooltip.y 
+            }}
           >
             <button 
               onClick={() => {

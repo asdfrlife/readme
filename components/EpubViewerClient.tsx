@@ -165,8 +165,11 @@ export default function EpubViewerClient({ url, fileName }: Readonly<{ url: stri
         {/* Ask AI Tooltip Overlay */}
         {tooltip && !errorMsg && (
           <div 
-            className="absolute z-50 -translate-y-full pb-1 pointer-events-auto flex items-center gap-2 shadow-2xl"
-            style={{ left: tooltip.x, top: tooltip.y }}
+            className="absolute z-50 -translate-y-full pb-1 pointer-events-auto flex items-center gap-2 shadow-2xl whitespace-nowrap"
+            style={{ 
+              left: `clamp(10px, ${tooltip.x}px, calc(100% - 220px))`, 
+              top: tooltip.y 
+            }}
           >
             <button 
               onClick={() => {
