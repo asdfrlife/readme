@@ -26,6 +26,11 @@ export async function GET(request: Request) {
     if (!error) {
       return NextResponse.redirect(`${origin}${next}`)
     } else {
+      // If the user clicks the link on a different device or browser, the PKCE code verifier cookie is missing.
+      // However, the email is already verified at this point by Supabase before it redirected here.
+      if (error.message.includes('PKCE') || error.message.includes('code verifier')) {
+        return NextResponse.redirect(`${origin}/signin?message=${encodeURIComponent('Email verified successfully! Please sign in.')}`)
+      }
       return NextResponse.redirect(`${origin}/signin?error=${encodeURIComponent(error.message)}`)
     }
   }
